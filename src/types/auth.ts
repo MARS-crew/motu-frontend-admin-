@@ -19,3 +19,13 @@ export type LoginResponse = TokenResponse & {
   verificationRequired: false;
   user: LoginUser;
 };
+
+// 관리자 접근 차단 화면(ADM-AUTH-01-E01)에 넘기는 계정 상태입니다.
+export type BlockedAdminStatus = 'SUSPENDED' | 'WITHDRAWN';
+
+export type BlockedAdminAccount = {
+  status: BlockedAdminStatus;
+  reason: string;
+  // YYYY.MM.DD
+  processedAt: string;
+};

@@ -17,8 +17,9 @@ const TONE_CLASS_NAMES: Record<NoticeTone, string> = {
 };
 
 export function Notice({ tone = 'neutral', className, children }: NoticeProps) {
+  // 여러 줄 안내는 children 에 <p> 를 여러 개 넣습니다.
   return (
-    <p
+    <div
       role={tone === 'danger' ? 'alert' : undefined}
       className={cn(
         'rounded-[10px] px-3.5 py-3 text-body-sm font-medium',
@@ -27,6 +28,6 @@ export function Notice({ tone = 'neutral', className, children }: NoticeProps) {
       )}
     >
       {children}
-    </p>
+    </div>
   );
 }
