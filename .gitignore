@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# build
+dist/
+dist-ssr/
+*.local
+
+# logs
+logs
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# editor
+.idea/
+.DS_Store
+*.pem
+
+# typescript
+*.tsbuildinfo
+
+# env
+.env
+.env*.local
