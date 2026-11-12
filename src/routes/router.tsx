@@ -18,7 +18,11 @@ import NoticesPage from '@/pages/notices/NoticesPage';
 import PasswordChangePage from '@/pages/password-change/PasswordChangePage';
 import PasswordResetConfirmPage from '@/pages/password-reset/PasswordResetConfirmPage';
 import PasswordResetRequestPage from '@/pages/password-reset/PasswordResetRequestPage';
+import ProductClosePage from '@/pages/products/ProductClosePage';
+import ProductDetailPage from '@/pages/products/ProductDetailPage';
+import ProductEditPage from '@/pages/products/ProductEditPage';
 import ProductsPage from '@/pages/products/ProductsPage';
+import ProductTradingPage from '@/pages/products/ProductTradingPage';
 import { ProtectedRoute } from '@/routes/ProtectedRoute';
 import { PublicOnlyRoute } from '@/routes/PublicOnlyRoute';
 import type { RouteHandle } from '@/routes/routeHandle';
@@ -86,6 +90,26 @@ export const router = createBrowserRouter([
             handle: title('승인·반려·보완 요청'),
           },
           { path: ROUTES.PRODUCTS, element: <ProductsPage />, handle: title('상장 상품 목록') },
+          {
+            path: ROUTES.PRODUCT_DETAIL,
+            element: <ProductDetailPage />,
+            handle: title('상장 상품 상세'),
+          },
+          {
+            path: ROUTES.PRODUCT_EDIT,
+            element: <ProductEditPage />,
+            handle: title('상장 상품 정보 수정'),
+          },
+          {
+            path: ROUTES.PRODUCT_TRADING,
+            element: <ProductTradingPage />,
+            handle: title('거래 중지 및 재개'),
+          },
+          {
+            path: ROUTES.PRODUCT_CLOSE,
+            element: <ProductClosePage />,
+            handle: title('상품 종료 확인'),
+          },
           {
             path: ROUTES.MONITORING,
             element: <MonitoringPage />,
