@@ -6,6 +6,7 @@ import { ROUTES } from '@/constants/routes';
 import AdminsPage from '@/pages/admins/AdminsPage';
 import BlockedPage from '@/pages/blocked/BlockedPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
+import InquiriesPage from '@/pages/inquiries/InquiriesPage';
 import ListingsPage from '@/pages/listings/ListingsPage';
 import LoginPage from '@/pages/login/LoginPage';
 import MembersPage from '@/pages/members/MembersPage';
@@ -66,6 +67,11 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { path: ROUTES.DASHBOARD, element: <DashboardPage />, handle: title('운영 현황') },
+          {
+            path: ROUTES.INQUIRIES,
+            element: <InquiriesPage />,
+            handle: title('계정·인증 문의 관리'),
+          },
           { path: ROUTES.LISTINGS, element: <ListingsPage />, handle: title('상장 신청 목록') },
           { path: ROUTES.PRODUCTS, element: <ProductsPage />, handle: title('상장 상품 목록') },
           {
