@@ -7,6 +7,7 @@ import AdminsPage from '@/pages/admins/AdminsPage';
 import BlockedPage from '@/pages/blocked/BlockedPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 import InquiriesPage from '@/pages/inquiries/InquiriesPage';
+import ListingDetailPage from '@/pages/listings/ListingDetailPage';
 import ListingsPage from '@/pages/listings/ListingsPage';
 import LoginPage from '@/pages/login/LoginPage';
 import MembersPage from '@/pages/members/MembersPage';
@@ -73,6 +74,11 @@ export const router = createBrowserRouter([
             handle: title('계정·인증 문의 관리'),
           },
           { path: ROUTES.LISTINGS, element: <ListingsPage />, handle: title('상장 신청 목록') },
+          {
+            path: ROUTES.LISTING_DETAIL,
+            element: <ListingDetailPage />,
+            handle: title('상장 신청 상세 심사'),
+          },
           { path: ROUTES.PRODUCTS, element: <ProductsPage />, handle: title('상장 상품 목록') },
           {
             path: ROUTES.MONITORING,
