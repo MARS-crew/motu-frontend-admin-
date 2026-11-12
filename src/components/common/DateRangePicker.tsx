@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 
 import calendarIcon from '@/assets/icons/calendar.svg';
@@ -30,6 +31,8 @@ type DateRangePickerProps = {
   // 이 날짜 이후는 선택할 수 없습니다. (오늘 이후 집계가 없는 경우 등)
   maxDate?: Date;
   className?: string;
+  // 제목 아래에 넣을 내용 (빠른 기간 선택 칩 등)
+  children?: ReactNode;
 };
 
 // 시작일·종료일 달력 팝오버입니다. (대시보드 직접 설정, 상장 신청 기간 등)
@@ -41,6 +44,7 @@ export function DateRangePicker({
   onCancel,
   maxDate,
   className,
+  children,
 }: DateRangePickerProps) {
   const [range, setRange] = useState<DateRange>(value);
   const [month, setMonth] = useState(() =>
@@ -94,6 +98,8 @@ export function DateRangePicker({
           )}
         </button>
       </div>
+
+      {children}
 
       <div className="flex gap-2">
         {[
