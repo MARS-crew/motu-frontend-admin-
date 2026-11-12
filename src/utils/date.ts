@@ -47,3 +47,17 @@ export const getCalendarWeeks = (month: Date) => {
 };
 
 export const WEEKDAY_LABELS = ['월', '화', '수', '목', '금', '토', '일'];
+
+// URL·API 용 날짜 문자열: 2026-09-01
+export const toISODate = (date: Date) =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+export const parseISODate = (value: string | null) => {
+  if (!value) return null;
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+};
+
+// 2026-08-31 → 08.31
+export const formatMonthDay = (value: string) => value.slice(5).replace('-', '.');
