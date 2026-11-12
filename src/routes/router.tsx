@@ -8,6 +8,7 @@ import BlockedPage from '@/pages/blocked/BlockedPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 import InquiriesPage from '@/pages/inquiries/InquiriesPage';
 import ListingDetailPage from '@/pages/listings/ListingDetailPage';
+import ListingReviewPage from '@/pages/listings/ListingReviewPage';
 import ListingsPage from '@/pages/listings/ListingsPage';
 import LoginPage from '@/pages/login/LoginPage';
 import MembersPage from '@/pages/members/MembersPage';
@@ -78,6 +79,11 @@ export const router = createBrowserRouter([
             path: ROUTES.LISTING_DETAIL,
             element: <ListingDetailPage />,
             handle: title('상장 신청 상세 심사'),
+          },
+          {
+            path: ROUTES.LISTING_REVIEW,
+            element: <ListingReviewPage />,
+            handle: title('승인·반려·보완 요청'),
           },
           { path: ROUTES.PRODUCTS, element: <ProductsPage />, handle: title('상장 상품 목록') },
           {

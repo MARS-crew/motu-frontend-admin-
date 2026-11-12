@@ -25,6 +25,8 @@ export default {
         'motu-green': '#0E9F6E',
         'motu-success': '#1A7F5A',
         'motu-success-light': '#E6F4EE',
+        // 모달 뒤 배경 dim
+        'motu-scrim': 'rgba(15, 18, 23, 0.45)',
       },
       // Figma 관리자 디자인의 텍스트 스타일입니다. [크기, 행간]
       fontSize: {
@@ -54,6 +56,7 @@ export default {
       boxShadow: {
         // 달력 팝오버 등 화면 위에 뜨는 패널
         popover: '0px 8px 12px rgba(0, 0, 0, 0.1)',
+        modal: '0px 12px 16px rgba(0, 0, 0, 0.12)',
       },
     },
   },
