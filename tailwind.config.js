@@ -51,6 +51,10 @@ export default {
         sidebar: '240px',
         header: '64px',
       },
+      boxShadow: {
+        // 달력 팝오버 등 화면 위에 뜨는 패널
+        popover: '0px 8px 12px rgba(0, 0, 0, 0.1)',
+      },
     },
   },
   plugins: [],

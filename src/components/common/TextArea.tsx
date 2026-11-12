@@ -3,6 +3,7 @@ import type { TextareaHTMLAttributes } from 'react';
 import {
   FIELD_BOX_CLASS_NAME,
   FIELD_BOX_ERROR_CLASS_NAME,
+  FIELD_BOX_READ_ONLY_CLASS_NAME,
 } from '@/components/common/fieldBoxClassName';
 import { cn } from '@/utils/cn';
 
@@ -23,6 +24,7 @@ export function TextArea({ size = 'md', hasError = false, className, ...props }:
     <textarea
       className={cn(
         FIELD_BOX_CLASS_NAME,
+        FIELD_BOX_READ_ONLY_CLASS_NAME,
         'resize-none py-3',
         SIZE_CLASS_NAMES[size],
         hasError && FIELD_BOX_ERROR_CLASS_NAME,

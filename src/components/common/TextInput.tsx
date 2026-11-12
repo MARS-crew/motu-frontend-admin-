@@ -3,6 +3,7 @@ import type { InputHTMLAttributes } from 'react';
 import {
   FIELD_BOX_CLASS_NAME,
   FIELD_BOX_ERROR_CLASS_NAME,
+  FIELD_BOX_READ_ONLY_CLASS_NAME,
 } from '@/components/common/fieldBoxClassName';
 import { cn } from '@/utils/cn';
 
@@ -16,6 +17,7 @@ export function TextInput({ hasError = false, className, ...props }: TextInputPr
     <input
       className={cn(
         FIELD_BOX_CLASS_NAME,
+        FIELD_BOX_READ_ONLY_CLASS_NAME,
         'h-11',
         hasError && FIELD_BOX_ERROR_CLASS_NAME,
         className,

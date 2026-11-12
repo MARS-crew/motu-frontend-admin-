@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import chevronDownIcon from '@/assets/icons/chevron-down.svg';
+import { useDismiss } from '@/hooks/useDismiss';
 import { useLogoutMutation } from '@/queries/useLogoutMutation';
 
 // 헤더 오른쪽 "관리자 ▾" 드롭다운입니다.
@@ -9,23 +10,8 @@ export function AdminMenu() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { mutate: logout, isPending } = useLogoutMutation();
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) setIsOpen(false);
-    };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsOpen(false);
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen]);
+  const handleClose = useCallback(() => setIsOpen(false), []);
+  useDismiss(containerRef, isOpen, handleClose);
 
   const handleToggle = () => setIsOpen((prev) => !prev);
   const handleLogout = () => logout();
