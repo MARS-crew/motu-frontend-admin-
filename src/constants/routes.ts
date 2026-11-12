@@ -11,6 +11,7 @@ export const ROUTES = {
   INQUIRIES: '/inquiries',
   LISTINGS: '/listings',
   LISTING_DETAIL: '/listings/:applicationId',
+  LISTING_REVIEW: '/listings/:applicationId/review',
   PRODUCTS: '/products',
   MONITORING: '/monitoring',
   NOTICES: '/notices',
@@ -20,3 +21,6 @@ export const ROUTES = {
 
 export const getListingDetailPath = (applicationId: string) =>
   ROUTES.LISTING_DETAIL.replace(':applicationId', encodeURIComponent(applicationId));
+
+export const getListingReviewPath = (applicationId: string) =>
+  ROUTES.LISTING_REVIEW.replace(':applicationId', encodeURIComponent(applicationId));
