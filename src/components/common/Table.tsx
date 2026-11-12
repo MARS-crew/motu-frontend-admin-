@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 
 import { cn } from '@/utils/cn';
 
@@ -17,6 +17,9 @@ type TableProps<Row> = {
   // 열 너비 → 'grid-cols-[1.5fr_repeat(5,1fr)]' 같은 Tailwind 클래스
   gridClassName: string;
   emptyMessage?: string;
+  // 행을 눌러 선택하는 테이블 (변경 이력 등)
+  onRowClick?: (row: Row) => void;
+  selectedRowKey?: string | null;
 };
 
 // 관리자 목록 테이블입니다. 헤더 44px, 행 52px.
@@ -26,7 +29,16 @@ export function Table<Row>({
   getRowKey,
   gridClassName,
   emptyMessage = '조회된 내역이 없습니다.',
+  onRowClick,
+  selectedRowKey,
 }: TableProps<Row>) {
+  const handleRowKeyDown = (event: KeyboardEvent<HTMLDivElement>, row: Row) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onRowClick?.(row);
+    }
+  };
+
   return (
     <div role="table" className="overflow-hidden rounded-[14px] border border-motu-border bg-white">
       <div
@@ -48,31 +60,41 @@ export function Table<Row>({
           {emptyMessage}
         </p>
       ) : (
-        rows.map((row) => (
-          <div
-            key={getRowKey(row)}
-            role="row"
-            className={cn(
-              'grid h-[52px] border-b border-motu-border last:border-b-0',
-              gridClassName,
-            )}
-          >
-            {columns.map((column) => (
-              <div
-                key={column.id}
-                role="cell"
-                className={cn(
-                  'flex min-w-0 items-center truncate px-4 text-body-sm',
-                  column.isEmphasized
-                    ? 'font-bold text-motu-text-primary'
-                    : 'font-medium text-motu-text-secondary',
-                )}
-              >
-                {column.cell(row)}
-              </div>
-            ))}
-          </div>
-        ))
+        rows.map((row) => {
+          const rowKey = getRowKey(row);
+          const isSelected = selectedRowKey === rowKey;
+          return (
+            <div
+              key={rowKey}
+              role="row"
+              aria-selected={onRowClick ? isSelected : undefined}
+              tabIndex={onRowClick ? 0 : undefined}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              onKeyDown={onRowClick ? (event) => handleRowKeyDown(event, row) : undefined}
+              className={cn(
+                'grid h-[52px] border-b border-motu-border last:border-b-0',
+                gridClassName,
+                onRowClick && 'cursor-pointer hover:bg-motu-bg',
+                isSelected && 'bg-motu-bg-secondary hover:bg-motu-bg-secondary',
+              )}
+            >
+              {columns.map((column) => (
+                <div
+                  key={column.id}
+                  role="cell"
+                  className={cn(
+                    'flex min-w-0 items-center truncate px-4 text-body-sm',
+                    column.isEmphasized
+                      ? 'font-bold text-motu-text-primary'
+                      : 'font-medium text-motu-text-secondary',
+                  )}
+                >
+                  {column.cell(row)}
+                </div>
+              ))}
+            </div>
+          );
+        })
       )}
     </div>
   );
