@@ -7,6 +7,8 @@ export const ROUTES = {
   PASSWORD_CHANGE: '/password/change',
   BLOCKED: '/blocked',
   DASHBOARD: '/',
+  // 대시보드 > 처리 대기 > 계정·인증 문의
+  INQUIRIES: '/inquiries',
   LISTINGS: '/listings',
   PRODUCTS: '/products',
   MONITORING: '/monitoring',
