@@ -20,6 +20,10 @@ export const ROUTES = {
   // 상품 종료 확인
   PRODUCT_CLOSE: '/products/:productId/close',
   MONITORING: '/monitoring',
+  // 서비스 주요 지표 (ADM-MON-03)
+  MONITORING_METRICS: '/monitoring/metrics',
+  // 이상 거래 상세 (ADM-MON-02)
+  MONITORING_DETAIL: '/monitoring/:alertId',
   NOTICES: '/notices',
   ADMINS: '/admins',
   MEMBERS: '/members',
@@ -45,3 +49,6 @@ export const getProductTradingPath = (productId: string) =>
 
 export const getProductClosePath = (productId: string) =>
   withParam(ROUTES.PRODUCT_CLOSE, 'productId', productId);
+
+export const getMonitoringDetailPath = (alertId: string) =>
+  withParam(ROUTES.MONITORING_DETAIL, 'alertId', alertId);
