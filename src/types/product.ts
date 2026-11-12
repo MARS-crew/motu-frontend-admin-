@@ -63,3 +63,9 @@ export type ProductFilters = {
   category: ListingCategory | 'ALL';
   exposure: ProductExposure | 'ALL';
 };
+
+// 이상 거래 상세(ADM-MON-02)에서 거래 중지로 진입하면 사유를 채워 넘기고, 처리 후 그 화면으로 돌아갑니다.
+export type ProductTradingLocationState = {
+  reason?: string;
+  returnTo?: string;
+} | null;

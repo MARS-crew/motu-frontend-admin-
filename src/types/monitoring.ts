@@ -31,3 +31,15 @@ export type MonitoringFilters = {
   // 상품 ID 또는 회원 ID
   targetId: string;
 };
+
+export type AbnormalTradeDetail = AbnormalTradeSummary & {
+  productName: string;
+  memberLoginId: string;
+  orderId: string;
+  tradeId: string;
+  // 탐지 근거 (주문·체결 수량, 기준·체결 가격, 자산 차이 등)
+  evidences: { label: string; value: string }[];
+};
+
+// 관리자 조치: 상품 거래 중지 · 회원 정지 · 이상 없음
+export type AbnormalTradeAction = 'PAUSE_PRODUCT' | 'SUSPEND_MEMBER' | 'NO_ISSUE';

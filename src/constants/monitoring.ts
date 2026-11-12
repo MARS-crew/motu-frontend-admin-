@@ -1,6 +1,11 @@
 import type { BadgeTone } from '@/components/common/Badge';
 import type { SelectOption } from '@/components/common/Select';
-import type { AbnormalTradeStatus, AbnormalTradeType, MonitoringPeriod } from '@/types/monitoring';
+import type {
+  AbnormalTradeAction,
+  AbnormalTradeStatus,
+  AbnormalTradeType,
+  MonitoringPeriod,
+} from '@/types/monitoring';
 
 // 드롭다운과 목록에 같은 명칭을 사용합니다.
 export const ABNORMAL_TRADE_TYPE_LABELS: Record<AbnormalTradeType, string> = {
@@ -47,4 +52,10 @@ export const MONITORING_PERIOD_PRESETS: {
   { value: '24h', label: '최근 24시간' },
   { value: '7d', label: '최근 7일' },
   { value: '30d', label: '최근 30일' },
+];
+
+export const ABNORMAL_TRADE_ACTION_OPTIONS: SelectOption<AbnormalTradeAction>[] = [
+  { value: 'PAUSE_PRODUCT', label: '상품 거래 중지' },
+  { value: 'SUSPEND_MEMBER', label: '회원 정지' },
+  { value: 'NO_ISSUE', label: '이상 없음' },
 ];

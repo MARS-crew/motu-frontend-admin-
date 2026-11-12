@@ -13,14 +13,8 @@ import { getProductDetailPreview } from '@/constants/productPreview';
 import { getProductDetailPath } from '@/constants/routes';
 import type { ProductPauseForm, ProductResumeForm } from '@/schemas/productSchema';
 import { productPauseSchema, productResumeSchema } from '@/schemas/productSchema';
-import type { ProductDetail } from '@/types/product';
+import type { ProductDetail, ProductTradingLocationState } from '@/types/product';
 import { formatNumber } from '@/utils/format';
-
-// 이상 거래 상세(ADM-MON-02)에서 진입하면 사유를 채워 넘기고, 처리 후 그 화면으로 돌아갑니다.
-export type ProductTradingLocationState = {
-  reason?: string;
-  returnTo?: string;
-} | null;
 
 type TradingCardProps = {
   product: ProductDetail;
