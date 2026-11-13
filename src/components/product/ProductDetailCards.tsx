@@ -5,7 +5,7 @@ import type { TableColumn } from '@/components/common/Table';
 import { Table } from '@/components/common/Table';
 import { LISTING_CATEGORY_LABELS } from '@/constants/listing';
 import { NOT_REGISTERED_LABEL, PRODUCT_EXPOSURE_LABELS } from '@/constants/product';
-import type { ProductDetail, ProductHistory, ProductMetricsSnapshot } from '@/types/product';
+import type { ProductDetail, ProductHistory } from '@/types/product';
 import { formatDateTimeText, formatMonthDayTime } from '@/utils/date';
 import { formatNumber } from '@/utils/format';
 
@@ -50,39 +50,31 @@ export function ProductBasicInfoCards({ product }: ProductCardProps) {
   );
 }
 
-const getMetricsItems = (metrics: ProductMetricsSnapshot, updatedLabel: string) => [
-  { label: 'MAU', value: metrics.mau === null ? NOT_REGISTERED_LABEL : formatNumber(metrics.mau) },
-  {
-    label: '거래액',
-    value:
-      metrics.transactionAmount === null
-        ? NOT_REGISTERED_LABEL
-        : formatNumber(metrics.transactionAmount),
-  },
-  {
-    label: '지표 기준일',
-    value: metrics.baseDate ? formatDateTimeText(metrics.baseDate) : NOT_REGISTERED_LABEL,
-  },
-  { label: updatedLabel, value: metrics.updatedLabel },
-];
-
 // ADM-PRD-02-02 서비스 지표 탭 (값이 없으면 '미등록')
-export function ProductMetricsCards({ product }: ProductCardProps) {
+export function ProductMetricsCard({ product }: ProductCardProps) {
+  const { metrics } = product;
+
   return (
-    <div className="flex items-stretch gap-5">
-      <InfoCard
-        title="현재 서비스 지표"
-        className="flex-1"
-        items={getMetricsItems(product.currentMetrics, '최근 수정')}
-      />
-      {product.previousMetrics && (
-        <InfoCard
-          title="이전 서비스 지표"
-          className="flex-1"
-          items={getMetricsItems(product.previousMetrics, '등록')}
-        />
-      )}
-    </div>
+    <InfoCard
+      title="등록된 서비스 지표"
+      items={[
+        {
+          label: 'MAU',
+          value: metrics.mau === null ? NOT_REGISTERED_LABEL : `${formatNumber(metrics.mau)}명`,
+        },
+        {
+          label: '거래액',
+          value:
+            metrics.transactionAmount === null
+              ? NOT_REGISTERED_LABEL
+              : formatNumber(metrics.transactionAmount),
+        },
+        {
+          label: '지표 기준일',
+          value: metrics.baseDate ? formatDateTimeText(metrics.baseDate) : NOT_REGISTERED_LABEL,
+        },
+      ]}
+    />
   );
 }
 

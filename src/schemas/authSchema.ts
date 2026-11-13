@@ -16,6 +16,9 @@ const passwordRule = z
   .regex(/\d/, '숫자를 1자 이상 포함해 주세요.')
   .regex(/[^A-Za-z\d\s]/, '특수문자를 1자 이상 포함해 주세요.');
 
+// 비밀번호 입력 아래에 항상 보여주는 안내 문구
+export const PASSWORD_RULE_TEXT = '비밀번호 조건: 8~20자, 영문·숫자·특수문자 각 1개 이상';
+
 export const PASSWORD_MISMATCH_MESSAGE = '비밀번호가 일치하지 않습니다. 다시 입력해 주세요.';
 
 export const newPasswordSchema = z

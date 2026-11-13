@@ -6,7 +6,7 @@ import { ProductActions } from '@/components/product/ProductActions';
 import {
   ProductBasicInfoCards,
   ProductHistorySection,
-  ProductMetricsCards,
+  ProductMetricsCard,
 } from '@/components/product/ProductDetailCards';
 import { ProductTitle } from '@/components/product/ProductTitle';
 import { PRODUCT_DETAIL_TABS } from '@/constants/product';
@@ -53,7 +53,7 @@ export default function ProductDetailPage() {
       </div>
 
       {tab === 'basic' && <ProductBasicInfoCards product={product} />}
-      {tab === 'metrics' && <ProductMetricsCards product={product} />}
+      {tab === 'metrics' && <ProductMetricsCard product={product} />}
       {tab === 'history' && <ProductHistorySection product={product} />}
 
       <ProductActions productId={product.productId} tradeStatus={product.tradeStatus} />

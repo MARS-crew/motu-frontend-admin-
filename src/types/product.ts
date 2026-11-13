@@ -18,13 +18,12 @@ export type ProductSummary = {
   exposure: ProductExposure;
 };
 
-export type ProductMetricsSnapshot = {
+// 등록된 서비스 지표 (값이 없으면 null → '미등록')
+export type ProductMetrics = {
   mau: number | null;
   transactionAmount: number | null;
   // YYYY-MM-DD
   baseDate: string | null;
-  // 2026.09.02 14:10 · admin01
-  updatedLabel: string;
 };
 
 export type ProductHistory = {
@@ -49,8 +48,7 @@ export type ProductDetail = ProductSummary & {
   openOrderCount: number;
   // 24시간 거래 진행 중
   tradeStatusDescription: string;
-  currentMetrics: ProductMetricsSnapshot;
-  previousMetrics: ProductMetricsSnapshot | null;
+  metrics: ProductMetrics;
   histories: ProductHistory[];
 };
 

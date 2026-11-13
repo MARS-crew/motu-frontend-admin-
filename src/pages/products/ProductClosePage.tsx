@@ -118,6 +118,7 @@ export default function ProductClosePage() {
             <p className="whitespace-pre-wrap break-keep">
               {userNotice.trim() || '사용자 안내문을 입력하면 여기에 표시됩니다.'}
             </p>
+            <p>신규 주문을 할 수 없습니다.</p>
           </Notice>
           <div className="flex gap-2">
             <Button disabled className="flex-1">
