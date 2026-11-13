@@ -92,9 +92,9 @@ export default function ProductEditPage() {
     intro: product?.intro ?? '',
     officialUrl: product?.officialUrl ?? '',
     imageFileName: CURRENT_IMAGE_LABEL,
-    mau: toNumberText(product?.currentMetrics.mau ?? null),
-    transactionAmount: toNumberText(product?.currentMetrics.transactionAmount ?? null),
-    metricsBaseDate: product?.currentMetrics.baseDate ?? '',
+    mau: toNumberText(product?.metrics.mau ?? null),
+    transactionAmount: toNumberText(product?.metrics.transactionAmount ?? null),
+    metricsBaseDate: product?.metrics.baseDate ?? '',
     reason: '',
   };
 

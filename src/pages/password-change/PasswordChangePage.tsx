@@ -10,7 +10,7 @@ import { Notice } from '@/components/common/Notice';
 import { TextInput } from '@/components/common/TextInput';
 import { ROUTES } from '@/constants/routes';
 import type { InitialPasswordForm } from '@/schemas/authSchema';
-import { initialPasswordSchema } from '@/schemas/authSchema';
+import { initialPasswordSchema, PASSWORD_RULE_TEXT } from '@/schemas/authSchema';
 
 // ADM-AUTH-01-01 관리자 최초 비밀번호 변경 (임시 비밀번호로 최초 로그인한 경우)
 export default function PasswordChangePage() {
@@ -69,7 +69,10 @@ export default function PasswordChangePage() {
             />
           </Field>
         </div>
-        <FieldMessage errorMessage={errorMessage} />
+        <div className="flex flex-col gap-1">
+          <FieldMessage errorMessage={errorMessage} />
+          <FieldMessage helperText={PASSWORD_RULE_TEXT} />
+        </div>
       </div>
       <div className="flex w-full justify-end">
         <Button type="submit" disabled={!isValid}>

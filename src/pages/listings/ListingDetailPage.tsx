@@ -72,7 +72,11 @@ export default function ListingDetailPage() {
         </>
       ) : (
         <div className="flex items-stretch gap-5">
-          <ListingSummaryCard application={application} className="flex-1" />
+          <ListingSummaryCard
+            application={application}
+            className="flex-1"
+            hasImage={tab === 'basic'}
+          />
           {tab === 'basic' && <ListingBasicInfoCard application={application} />}
           {tab === 'trading' && <ListingTradingCard application={application} />}
           {tab === 'metrics' && <ListingMetricsCard application={application} />}

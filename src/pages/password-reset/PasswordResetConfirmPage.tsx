@@ -9,7 +9,7 @@ import { FieldMessage } from '@/components/common/FieldMessage';
 import { TextInput } from '@/components/common/TextInput';
 import { ROUTES } from '@/constants/routes';
 import type { NewPasswordForm } from '@/schemas/authSchema';
-import { newPasswordSchema } from '@/schemas/authSchema';
+import { newPasswordSchema, PASSWORD_RULE_TEXT } from '@/schemas/authSchema';
 
 // ADM-AUTH-02-01 관리자 새 비밀번호 설정 (재설정 메일의 일회용 링크로 진입)
 export default function PasswordResetConfirmPage() {
@@ -56,10 +56,14 @@ export default function PasswordResetConfirmPage() {
             />
           </Field>
         </div>
-        <FieldMessage
-          errorMessage={errorMessage}
-          helperText="새 비밀번호와 확인값을 동일하게 입력해 주세요."
-        />
+        {/* 오류가 있으면 오류 → 비밀번호 조건, 없으면 비밀번호 조건 → 확인값 안내 */}
+        <div className="flex flex-col gap-1">
+          <FieldMessage errorMessage={errorMessage} />
+          <FieldMessage helperText={PASSWORD_RULE_TEXT} />
+          {!errorMessage && (
+            <FieldMessage helperText="새 비밀번호와 확인값을 동일하게 입력해 주세요." />
+          )}
+        </div>
       </div>
       <div className="flex w-full justify-end">
         <Button type="submit" disabled={!isValid}>

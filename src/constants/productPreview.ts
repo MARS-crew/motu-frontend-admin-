@@ -55,17 +55,10 @@ const DETAIL_PREVIEW: Omit<ProductDetail, keyof ProductSummary | 'tradeStatusDes
   intro: 'SaaS 기업 성장성 기반 모의투자 상품',
   totalSupply: 100000,
   openOrderCount: 24,
-  currentMetrics: {
+  metrics: {
     mau: 120000,
     transactionAmount: 85000000,
     baseDate: '2026-08-31',
-    updatedLabel: '2026.09.02 14:10 · admin01',
-  },
-  previousMetrics: {
-    mau: 98000,
-    transactionAmount: 72000000,
-    baseDate: '2026-07-31',
-    updatedLabel: '2026.08.31 20:30 · 상장 승인 시 확정',
   },
   histories: [
     {
