@@ -12,7 +12,9 @@ import ListingReviewPage from '@/pages/listings/ListingReviewPage';
 import ListingsPage from '@/pages/listings/ListingsPage';
 import LoginPage from '@/pages/login/LoginPage';
 import MembersPage from '@/pages/members/MembersPage';
+import MonitoringDetailPage from '@/pages/monitoring/MonitoringDetailPage';
 import MonitoringPage from '@/pages/monitoring/MonitoringPage';
+import ServiceMetricsPage from '@/pages/monitoring/ServiceMetricsPage';
 import NotFoundPage from '@/pages/not-found/NotFoundPage';
 import NoticesPage from '@/pages/notices/NoticesPage';
 import PasswordChangePage from '@/pages/password-change/PasswordChangePage';
@@ -113,7 +115,20 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.MONITORING,
             element: <MonitoringPage />,
-            handle: title('거래 및 주문 모니터링'),
+            handle: {
+              title: '거래 및 주문 모니터링',
+              action: { label: '서비스 주요 지표', to: ROUTES.MONITORING_METRICS },
+            },
+          },
+          {
+            path: ROUTES.MONITORING_METRICS,
+            element: <ServiceMetricsPage />,
+            handle: title('서비스 주요 지표'),
+          },
+          {
+            path: ROUTES.MONITORING_DETAIL,
+            element: <MonitoringDetailPage />,
+            handle: title('이상 거래 상세'),
           },
           { path: ROUTES.NOTICES, element: <NoticesPage />, handle: title('공지 목록') },
           { path: ROUTES.ADMINS, element: <AdminsPage />, handle: title('관리자 계정 목록') },
