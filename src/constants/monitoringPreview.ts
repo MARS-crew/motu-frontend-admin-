@@ -1,4 +1,4 @@
-import type { AbnormalTradeSummary } from '@/types/monitoring';
+import type { AbnormalTradeDetail, AbnormalTradeSummary } from '@/types/monitoring';
 
 // TODO(MOTU-24-1): 이상 거래 모니터링 API 연동 후 제거합니다.
 // 퍼블리싱 확인용 예시 데이터입니다. (Figma 21 · 관리자 거래 모니터링)
@@ -67,3 +67,23 @@ export const ABNORMAL_TRADES_PREVIEW: AbnormalTradeSummary[] = [
     status: 'DONE',
   },
 ];
+
+// TODO(MOTU-25-1): 이상 거래 상세 API 연동 후 제거합니다.
+export const getAbnormalTradeDetailPreview = (alertId: string): AbnormalTradeDetail | null => {
+  const summary = ABNORMAL_TRADES_PREVIEW.find((trade) => trade.alertId === alertId);
+  if (!summary) return null;
+  return {
+    ...summary,
+    productName: 'SaaS Index',
+    memberLoginId: 'minhyuk01',
+    orderId: 'ORD-9031842',
+    tradeId: 'TRD-9032201',
+    evidences: [
+      { label: '주문 수량', value: '8,000' },
+      { label: '체결 수량', value: '8,000' },
+      { label: '기준 가격', value: '12,480P' },
+      { label: '체결 가격', value: '18,900P' },
+      { label: '자산 차이', value: '-51,360,000P' },
+    ],
+  };
+};
