@@ -13,14 +13,35 @@ export const ROUTES = {
   LISTING_DETAIL: '/listings/:applicationId',
   LISTING_REVIEW: '/listings/:applicationId/review',
   PRODUCTS: '/products',
+  PRODUCT_DETAIL: '/products/:productId',
+  PRODUCT_EDIT: '/products/:productId/edit',
+  // 거래 중지 및 재개
+  PRODUCT_TRADING: '/products/:productId/trading',
+  // 상품 종료 확인
+  PRODUCT_CLOSE: '/products/:productId/close',
   MONITORING: '/monitoring',
   NOTICES: '/notices',
   ADMINS: '/admins',
   MEMBERS: '/members',
 } as const;
 
+const withParam = (pattern: string, name: string, value: string) =>
+  pattern.replace(`:${name}`, encodeURIComponent(value));
+
 export const getListingDetailPath = (applicationId: string) =>
-  ROUTES.LISTING_DETAIL.replace(':applicationId', encodeURIComponent(applicationId));
+  withParam(ROUTES.LISTING_DETAIL, 'applicationId', applicationId);
 
 export const getListingReviewPath = (applicationId: string) =>
-  ROUTES.LISTING_REVIEW.replace(':applicationId', encodeURIComponent(applicationId));
+  withParam(ROUTES.LISTING_REVIEW, 'applicationId', applicationId);
+
+export const getProductDetailPath = (productId: string) =>
+  withParam(ROUTES.PRODUCT_DETAIL, 'productId', productId);
+
+export const getProductEditPath = (productId: string) =>
+  withParam(ROUTES.PRODUCT_EDIT, 'productId', productId);
+
+export const getProductTradingPath = (productId: string) =>
+  withParam(ROUTES.PRODUCT_TRADING, 'productId', productId);
+
+export const getProductClosePath = (productId: string) =>
+  withParam(ROUTES.PRODUCT_CLOSE, 'productId', productId);

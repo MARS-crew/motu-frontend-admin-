@@ -61,3 +61,10 @@ export const parseISODate = (value: string | null) => {
 
 // 2026-08-31 → 08.31
 export const formatMonthDay = (value: string) => value.slice(5).replace('-', '.');
+
+// 2026-09-01T09:00 → 09.01 09:00
+export const formatMonthDayTime = (value: string) =>
+  `${formatMonthDay(value.slice(0, 10))} ${value.slice(11, 16)}`;
+
+// 2026-09-01T09:00 → 2026.09.01 09:00 / 2026-09-01 → 2026.09.01
+export const formatDateTimeText = (value: string) => value.replaceAll('-', '.').replace('T', ' ');
