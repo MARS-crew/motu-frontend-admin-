@@ -68,3 +68,9 @@ export const formatMonthDayTime = (value: string) =>
 
 // 2026-09-01T09:00 → 2026.09.01 09:00 / 2026-09-01 → 2026.09.01
 export const formatDateTimeText = (value: string) => value.replaceAll('-', '.').replace('T', ' ');
+
+// 2026-09-01 → 26.09.01
+export const formatShortDate = (value: string) => value.slice(2, 10).replaceAll('-', '.');
+
+// 2026-09-01 → 2026. 09. 01
+export const formatSpacedDate = (value: string) => value.slice(0, 10).replaceAll('-', '. ');
