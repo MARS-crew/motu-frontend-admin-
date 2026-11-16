@@ -9,7 +9,8 @@ export type InfoItem = {
 };
 
 type InfoCardProps = {
-  title: string;
+  // 제목 없이 항목-값 행만 보여줄 수도 있습니다.
+  title?: string;
   items?: InfoItem[];
   // danger: 빨간 배경의 강조 카드 (탐지 근거 등)
   tone?: 'default' | 'danger';
@@ -36,14 +37,16 @@ export function InfoCard({
         className,
       )}
     >
-      <h2
-        className={cn(
-          'text-title-md font-bold',
-          isDanger ? 'text-motu-btn-red' : 'text-motu-text-primary',
-        )}
-      >
-        {title}
-      </h2>
+      {title && (
+        <h2
+          className={cn(
+            'text-title-md font-bold',
+            isDanger ? 'text-motu-btn-red' : 'text-motu-text-primary',
+          )}
+        >
+          {title}
+        </h2>
+      )}
       {items.length > 0 && (
         <dl className="flex flex-col gap-3.5">
           {items.map((item) => (

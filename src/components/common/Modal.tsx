@@ -4,6 +4,14 @@ import { createPortal } from 'react-dom';
 
 import { cn } from '@/utils/cn';
 
+type ModalSize = 'sm' | 'md' | 'lg';
+
+const SIZE_CLASS_NAMES: Record<ModalSize, string> = {
+  sm: 'max-w-[440px]',
+  md: 'max-w-[560px]',
+  lg: 'max-w-[640px]',
+};
+
 type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -11,8 +19,8 @@ type ModalProps = {
   description?: ReactNode;
   // 하단 버튼 영역 (오른쪽 정렬)
   actions: ReactNode;
-  // md: 560px(확인 모달) / lg: 640px(본문 보기 모달)
-  size?: 'md' | 'lg';
+  // sm: 440px(오류 안내) / md: 560px(확인 모달) / lg: 640px(본문 보기 모달)
+  size?: ModalSize;
   children?: ReactNode;
 };
 
@@ -59,7 +67,7 @@ export function Modal({
         tabIndex={-1}
         className={cn(
           'relative flex max-h-full w-full flex-col gap-5 rounded-2xl bg-white p-7 shadow-modal outline-none',
-          size === 'md' ? 'max-w-[560px]' : 'max-w-[640px]',
+          SIZE_CLASS_NAMES[size],
         )}
       >
         <div className="flex flex-col gap-1.5">
