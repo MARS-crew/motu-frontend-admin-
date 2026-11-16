@@ -23,6 +23,8 @@ export const ROUTES = {
   // 서비스 주요 지표 (ADM-MON-03)
   MONITORING_METRICS: '/monitoring/metrics',
   // 이상 거래 상세 (ADM-MON-02)
+  // 관리자 활동 이력 (ADM-MON-04)
+  ACTIVITY_LOGS: '/monitoring/activity-logs',
   MONITORING_DETAIL: '/monitoring/:alertId',
   NOTICES: '/notices',
   // 공지 작성 및 수정 (ADM-NTC-02)
@@ -31,6 +33,8 @@ export const ROUTES = {
   // 공지 비공개·삭제 확인 (ADM-NTC-04)
   NOTICE_DELETE: '/notices/:noticeId/delete',
   ADMINS: '/admins',
+  // 관리자 계정 생성·상태 변경 (ADM-ACC-02), ?target=아이디
+  ADMIN_MANAGE: '/admins/manage',
   MEMBERS: '/members',
   // 초기 지급 포인트 설정 (ADM-MBR-03)
   MEMBER_INITIAL_POINTS: '/members/initial-points',
@@ -84,3 +88,6 @@ export const getMemberUnlockPath = (memberId: string) =>
 
 export const getMemberPointsPath = (memberId: string) =>
   withParam(ROUTES.MEMBER_POINTS, 'memberId', memberId);
+
+export const getAdminManagePath = (loginId: string) =>
+  `${ROUTES.ADMIN_MANAGE}?target=${encodeURIComponent(loginId)}`;

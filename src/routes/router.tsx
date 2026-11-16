@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { AuthLayout } from '@/components/layout/AuthLayout';
 import { ROUTES } from '@/constants/routes';
+import AdminManagePage from '@/pages/admins/AdminManagePage';
 import AdminsPage from '@/pages/admins/AdminsPage';
 import BlockedPage from '@/pages/blocked/BlockedPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
@@ -17,6 +18,7 @@ import MemberPointsPage from '@/pages/members/MemberPointsPage';
 import MembersPage from '@/pages/members/MembersPage';
 import MemberStatusPage from '@/pages/members/MemberStatusPage';
 import MemberUnlockPage from '@/pages/members/MemberUnlockPage';
+import ActivityLogsPage from '@/pages/monitoring/ActivityLogsPage';
 import MonitoringDetailPage from '@/pages/monitoring/MonitoringDetailPage';
 import MonitoringPage from '@/pages/monitoring/MonitoringPage';
 import ServiceMetricsPage from '@/pages/monitoring/ServiceMetricsPage';
@@ -133,6 +135,11 @@ export const router = createBrowserRouter([
             handle: title('서비스 주요 지표'),
           },
           {
+            path: ROUTES.ACTIVITY_LOGS,
+            element: <ActivityLogsPage />,
+            handle: title('관리자 활동 이력'),
+          },
+          {
             path: ROUTES.MONITORING_DETAIL,
             element: <MonitoringDetailPage />,
             handle: title('이상 거래 상세'),
@@ -153,7 +160,12 @@ export const router = createBrowserRouter([
             element: <NoticeDeletePage />,
             handle: title('공지 삭제 확인'),
           },
-          { path: ROUTES.ADMINS, element: <AdminsPage />, handle: title('관리자 계정 목록') },
+          { path: ROUTES.ADMINS, element: <AdminsPage />, handle: title('관리자 계정') },
+          {
+            path: ROUTES.ADMIN_MANAGE,
+            element: <AdminManagePage />,
+            handle: title('관리자 계정'),
+          },
           // 회원 관리 하위 화면은 헤더에 메뉴 이름을, 본문 상단에 화면 이름을 표시합니다.
           { path: ROUTES.MEMBERS, element: <MembersPage />, handle: title('회원 관리') },
           {

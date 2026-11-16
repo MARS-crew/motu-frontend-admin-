@@ -1,0 +1,64 @@
+// 모든 관리자 계정은 같은 ADMIN 권한을 갖습니다. (ACTIVE 정상, SUSPENDED 정지)
+export type AdminAccountStatus = 'ACTIVE' | 'SUSPENDED';
+
+export type AdminAccount = {
+  adminId: string;
+  loginId: string;
+  name: string;
+  email: string;
+  status: AdminAccountStatus;
+  // 담당 업무 (참고값)
+  duty: string;
+  // YYYY-MM-DD
+  createdAt: string;
+  // YYYY-MM-DDTHH:mm, 로그인 이력이 없으면 null
+  lastLoginAt: string | null;
+};
+
+export type AdminAccountFilters = {
+  // 아이디·이름·이메일
+  keyword: string;
+  status: AdminAccountStatus | 'ALL';
+};
+
+// 백엔드 관리자 활동 이력 enum 과 같은 값을 씁니다.
+export type ActivityTargetType =
+  'LISTING_APPLICATION' | 'STOCK' | 'USER' | 'ADMIN' | 'NOTICE' | 'ANOMALY';
+
+export type ActivityAction =
+  | 'LISTING_APPROVE'
+  | 'LISTING_REVISION_REQUEST'
+  | 'LISTING_REJECT'
+  | 'STOCK_UPDATE'
+  | 'STOCK_PAUSE'
+  | 'STOCK_RESUME'
+  | 'STOCK_CLOSE'
+  | 'USER_STATUS_CHANGE'
+  | 'USER_UNLOCK'
+  | 'POINT_GRANT'
+  | 'POINT_RECALL'
+  | 'ADMIN_CREATE'
+  | 'ADMIN_STATUS_CHANGE'
+  | 'NOTICE_PUBLISH'
+  | 'NOTICE_HIDE'
+  | 'NOTICE_DELETE'
+  | 'ANOMALY_ACTION';
+
+export type ActivityResult = 'SUCCESS' | 'FAILURE';
+
+export type ActivityLog = {
+  activityLogId: string;
+  // YYYY-MM-DDTHH:mm (KST)
+  createdAt: string;
+  adminLoginId: string;
+  targetType: ActivityTargetType;
+  // PRD-018, USR-1024 같은 화면 표기용 대상
+  targetLabel: string;
+  action: ActivityAction;
+  result: ActivityResult;
+  before: string;
+  after: string;
+  reason: string;
+  // 마스킹된 접속 IP
+  ipAddress: string;
+};
