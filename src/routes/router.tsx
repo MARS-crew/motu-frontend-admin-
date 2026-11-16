@@ -11,7 +11,11 @@ import ListingDetailPage from '@/pages/listings/ListingDetailPage';
 import ListingReviewPage from '@/pages/listings/ListingReviewPage';
 import ListingsPage from '@/pages/listings/ListingsPage';
 import LoginPage from '@/pages/login/LoginPage';
+import MemberDetailPage from '@/pages/members/MemberDetailPage';
+import MemberPointsPage from '@/pages/members/MemberPointsPage';
 import MembersPage from '@/pages/members/MembersPage';
+import MemberStatusPage from '@/pages/members/MemberStatusPage';
+import MemberUnlockPage from '@/pages/members/MemberUnlockPage';
 import MonitoringDetailPage from '@/pages/monitoring/MonitoringDetailPage';
 import MonitoringPage from '@/pages/monitoring/MonitoringPage';
 import ServiceMetricsPage from '@/pages/monitoring/ServiceMetricsPage';
@@ -149,7 +153,12 @@ export const router = createBrowserRouter([
             handle: title('공지 삭제 확인'),
           },
           { path: ROUTES.ADMINS, element: <AdminsPage />, handle: title('관리자 계정 목록') },
+          // 회원 관리 하위 화면은 헤더에 메뉴 이름을, 본문 상단에 화면 이름을 표시합니다.
           { path: ROUTES.MEMBERS, element: <MembersPage />, handle: title('회원 관리') },
+          { path: ROUTES.MEMBER_DETAIL, element: <MemberDetailPage />, handle: title('회원 관리') },
+          { path: ROUTES.MEMBER_STATUS, element: <MemberStatusPage />, handle: title('회원 관리') },
+          { path: ROUTES.MEMBER_UNLOCK, element: <MemberUnlockPage />, handle: title('회원 관리') },
+          { path: ROUTES.MEMBER_POINTS, element: <MemberPointsPage />, handle: title('회원 관리') },
         ],
       },
     ],

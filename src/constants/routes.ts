@@ -32,6 +32,13 @@ export const ROUTES = {
   NOTICE_DELETE: '/notices/:noticeId/delete',
   ADMINS: '/admins',
   MEMBERS: '/members',
+  MEMBER_DETAIL: '/members/:memberId',
+  // 회원 상태 변경 (ADM-MBR-02-01)
+  MEMBER_STATUS: '/members/:memberId/status',
+  // 계정 잠금 해제 (ADM-MBR-02-02)
+  MEMBER_UNLOCK: '/members/:memberId/unlock',
+  // 회원 포인트 지급·회수 (ADM-MBR-02-03)
+  MEMBER_POINTS: '/members/:memberId/points',
 } as const;
 
 const withParam = (pattern: string, name: string, value: string) =>
@@ -63,3 +70,15 @@ export const getNoticeEditPath = (noticeId: string) =>
 
 export const getNoticeDeletePath = (noticeId: string) =>
   withParam(ROUTES.NOTICE_DELETE, 'noticeId', noticeId);
+
+export const getMemberDetailPath = (memberId: string) =>
+  withParam(ROUTES.MEMBER_DETAIL, 'memberId', memberId);
+
+export const getMemberStatusPath = (memberId: string) =>
+  withParam(ROUTES.MEMBER_STATUS, 'memberId', memberId);
+
+export const getMemberUnlockPath = (memberId: string) =>
+  withParam(ROUTES.MEMBER_UNLOCK, 'memberId', memberId);
+
+export const getMemberPointsPath = (memberId: string) =>
+  withParam(ROUTES.MEMBER_POINTS, 'memberId', memberId);
