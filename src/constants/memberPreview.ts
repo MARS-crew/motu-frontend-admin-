@@ -98,3 +98,6 @@ export const getMemberDetailPreview = (memberId: string): MemberDetail | null =>
     lockReason: summary.status === 'LOCKED' ? '로그인 5회 누적 실패' : null,
   };
 };
+
+// TODO(MOTU-28-1): 초기 지급 포인트 조회 API로 교체합니다.
+export const INITIAL_POINTS_PREVIEW = 3000000;

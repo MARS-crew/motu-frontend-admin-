@@ -1,11 +1,13 @@
-import { useLocation } from 'react-router';
+import { Link, useLocation } from 'react-router';
 
+import { buttonClassName } from '@/components/common/buttonClassName';
 import { PageHeading } from '@/components/common/PageHeading';
 import { Pagination } from '@/components/common/Pagination';
 import { MemberFilterCard } from '@/components/member/MemberFilterCard';
 import { MemberTable } from '@/components/member/MemberTable';
 import { MEMBER_PAGE_SIZE } from '@/constants/member';
 import { MEMBERS_PREVIEW } from '@/constants/memberPreview';
+import { ROUTES } from '@/constants/routes';
 import { useMemberFilters } from '@/hooks/useMemberFilters';
 import type { MemberFilters, MemberSummary } from '@/types/member';
 
@@ -37,6 +39,14 @@ export default function MembersPage() {
       <MemberFilterCard key={JSON.stringify(filters)} filters={filters} onSearch={applyFilters} />
       <MemberTable members={members} listSearch={location.search} />
       <Pagination page={page} totalPages={totalPages} onChange={changePage} />
+      <div className="flex justify-end">
+        <Link
+          to={ROUTES.MEMBER_INITIAL_POINTS}
+          className={buttonClassName({ variant: 'secondary' })}
+        >
+          초기 지급 포인트 설정
+        </Link>
+      </div>
     </div>
   );
 }
