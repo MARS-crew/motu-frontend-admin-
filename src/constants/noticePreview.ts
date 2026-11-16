@@ -1,0 +1,81 @@
+import type { NoticeDetail } from '@/types/notice';
+
+// TODO(MOTU-26-1): 공지 관리 API 연동 후 제거합니다.
+// 퍼블리싱 확인용 예시 데이터입니다. (Figma 22 · 관리자 공지 관리)
+export const NOTICES_PREVIEW: NoticeDetail[] = [
+  {
+    noticeId: 'NTC-20260905-021',
+    type: 'SERVICE',
+    title: '서비스 점검 안내',
+    productId: null,
+    productName: null,
+    status: 'SCHEDULED',
+    startAt: '2026-09-05T00:00',
+    endAt: '2026-09-05T23:59',
+    isImportant: true,
+    content: '9월 5일 02:00~04:00 서비스 점검이 진행됩니다.\n점검 중에는 주문이 제한됩니다.',
+  },
+  {
+    noticeId: 'NTC-20260903-018',
+    type: 'PRODUCT',
+    title: 'SaaS Index 거래 재개',
+    productId: 'PRD-018',
+    productName: 'SaaS Index',
+    status: 'PUBLISHED',
+    startAt: '2026-09-03T20:30',
+    endAt: '2026-09-10T23:59',
+    isImportant: false,
+    content: '점검이 완료되어 SaaS Index 거래를 재개합니다.\n거래 재개 일시: 2026.09.03 21:00',
+  },
+  {
+    noticeId: 'NTC-20260820-011',
+    type: 'SERVICE',
+    title: '이용약관 변경 안내',
+    productId: null,
+    productName: null,
+    status: 'PRIVATE',
+    startAt: '2026-08-20T09:00',
+    endAt: '2026-08-31T23:59',
+    isImportant: true,
+    content: '모투 이용약관이 2026년 9월 1일부터 변경됩니다.',
+  },
+  {
+    noticeId: 'NTC-20260902-017',
+    type: 'PRODUCT',
+    title: 'Health Plus 거래 종료',
+    productId: 'PRD-022',
+    productName: 'Health Plus',
+    status: 'DRAFT',
+    startAt: null,
+    endAt: null,
+    isImportant: false,
+    content: 'Health Plus 상품의 거래가 종료됩니다.',
+  },
+  {
+    noticeId: 'NTC-20260901-015',
+    type: 'SERVICE',
+    title: '추가 포인트 지급 이벤트',
+    productId: null,
+    productName: null,
+    status: 'PUBLISHED',
+    startAt: '2026-09-01T09:00',
+    endAt: '2026-09-07T23:59',
+    isImportant: true,
+    content: '9월 한 달간 추가 포인트 지급 대기시간이 줄어듭니다.',
+  },
+  {
+    noticeId: 'NTC-20260902-016',
+    type: 'SERVICE',
+    title: '신규 상장 상품 안내',
+    productId: null,
+    productName: null,
+    status: 'SCHEDULED',
+    startAt: '2026-09-04T09:00',
+    endAt: '2026-09-09T23:59',
+    isImportant: true,
+    content: '9월 신규 상장 상품을 확인해 보세요.',
+  },
+];
+
+export const getNoticePreview = (noticeId: string) =>
+  NOTICES_PREVIEW.find((notice) => notice.noticeId === noticeId) ?? null;

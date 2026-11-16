@@ -16,6 +16,8 @@ import MonitoringDetailPage from '@/pages/monitoring/MonitoringDetailPage';
 import MonitoringPage from '@/pages/monitoring/MonitoringPage';
 import ServiceMetricsPage from '@/pages/monitoring/ServiceMetricsPage';
 import NotFoundPage from '@/pages/not-found/NotFoundPage';
+import NoticeDeletePage from '@/pages/notices/NoticeDeletePage';
+import NoticeFormPage from '@/pages/notices/NoticeFormPage';
 import NoticesPage from '@/pages/notices/NoticesPage';
 import PasswordChangePage from '@/pages/password-change/PasswordChangePage';
 import PasswordResetConfirmPage from '@/pages/password-reset/PasswordResetConfirmPage';
@@ -131,6 +133,21 @@ export const router = createBrowserRouter([
             handle: title('이상 거래 상세'),
           },
           { path: ROUTES.NOTICES, element: <NoticesPage />, handle: title('공지 목록') },
+          {
+            path: ROUTES.NOTICE_NEW,
+            element: <NoticeFormPage />,
+            handle: title('공지 작성 및 수정'),
+          },
+          {
+            path: ROUTES.NOTICE_EDIT,
+            element: <NoticeFormPage />,
+            handle: title('공지 작성 및 수정'),
+          },
+          {
+            path: ROUTES.NOTICE_DELETE,
+            element: <NoticeDeletePage />,
+            handle: title('공지 삭제 확인'),
+          },
           { path: ROUTES.ADMINS, element: <AdminsPage />, handle: title('관리자 계정 목록') },
           { path: ROUTES.MEMBERS, element: <MembersPage />, handle: title('회원 관리') },
         ],
