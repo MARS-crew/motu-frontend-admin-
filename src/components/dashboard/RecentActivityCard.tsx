@@ -15,8 +15,8 @@ export function RecentActivityCard({ activities }: RecentActivityCardProps) {
       <ul className="flex flex-col">
         {activities.map((activity) => (
           <li key={activity.id} className="border-b border-motu-border last:border-b-0">
-            {/* TODO(MOTU-29): 관리자 활동 이력(ADM-MON-04)의 해당 기록으로 이동 */}
-            <Link to={ROUTES.MONITORING} className="flex flex-col gap-1 py-3.5 hover:opacity-80">
+            {/* TODO(MOTU-19-1): 활동 이력 ID가 내려오면 해당 기록을 선택해 엽니다. (?log=ID) */}
+            <Link to={ROUTES.ACTIVITY_LOGS} className="flex flex-col gap-1 py-3.5 hover:opacity-80">
               <span className="text-body-sm font-bold text-motu-text-primary">
                 {activity.time} {activity.adminName} · {activity.targetId}
               </span>
