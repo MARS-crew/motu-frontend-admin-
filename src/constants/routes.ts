@@ -25,6 +25,11 @@ export const ROUTES = {
   // 이상 거래 상세 (ADM-MON-02)
   MONITORING_DETAIL: '/monitoring/:alertId',
   NOTICES: '/notices',
+  // 공지 작성 및 수정 (ADM-NTC-02)
+  NOTICE_NEW: '/notices/new',
+  NOTICE_EDIT: '/notices/:noticeId/edit',
+  // 공지 비공개·삭제 확인 (ADM-NTC-04)
+  NOTICE_DELETE: '/notices/:noticeId/delete',
   ADMINS: '/admins',
   MEMBERS: '/members',
 } as const;
@@ -52,3 +57,9 @@ export const getProductClosePath = (productId: string) =>
 
 export const getMonitoringDetailPath = (alertId: string) =>
   withParam(ROUTES.MONITORING_DETAIL, 'alertId', alertId);
+
+export const getNoticeEditPath = (noticeId: string) =>
+  withParam(ROUTES.NOTICE_EDIT, 'noticeId', noticeId);
+
+export const getNoticeDeletePath = (noticeId: string) =>
+  withParam(ROUTES.NOTICE_DELETE, 'noticeId', noticeId);
