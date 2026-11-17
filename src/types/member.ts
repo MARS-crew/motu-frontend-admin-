@@ -1,0 +1,49 @@
+// ACTIVE 정상, LOCKED 잠금(로그인 5회 누적 실패), SUSPENDED 정지
+export type MemberStatus = 'ACTIVE' | 'LOCKED' | 'SUSPENDED';
+
+export type MemberSummary = {
+  memberId: string;
+  loginId: string;
+  nickname: string;
+  // sun***@mail.com
+  maskedEmail: string;
+  // YYYY-MM-DD
+  joinedAt: string;
+  status: MemberStatus;
+  // YYYY-MM-DDTHH:mm (KST)
+  lastLoginAt: string;
+};
+
+// 관리자 처리 이력 (상태 변경·잠금 해제·포인트 처리 등)
+export type MemberProcessHistory = {
+  // YYYY-MM-DDTHH:mm
+  processedAt: string;
+  actionType: string;
+  adminId: string;
+  reason: string;
+};
+
+export type MemberDetail = MemberSummary & {
+  isEmailVerified: boolean;
+  isTwoFactorEnabled: boolean;
+  // 010-****-1234
+  maskedPhone: string;
+  // YYYY-MM-DDTHH:mm, 인증 이력이 없으면 null
+  lastTwoFactorAt: string | null;
+  availablePoints: number;
+  // 미체결 주문에 묶인 포인트 (회수 대상에서 제외)
+  reservedPoints: number;
+  holdingProductCount: number;
+  openOrderCount: number;
+  // 잠금 상태일 때만 값이 있습니다.
+  lockReason: string | null;
+  recentHistory: MemberProcessHistory | null;
+};
+
+export type MemberFilters = {
+  loginId: string;
+  nickname: string;
+  status: MemberStatus | 'ALL';
+  // 1부터 시작
+  page: number;
+};
