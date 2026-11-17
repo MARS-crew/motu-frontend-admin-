@@ -32,6 +32,8 @@ export const ROUTES = {
   NOTICE_DELETE: '/notices/:noticeId/delete',
   ADMINS: '/admins',
   MEMBERS: '/members',
+  // 초기 지급 포인트 설정 (ADM-MBR-03)
+  MEMBER_INITIAL_POINTS: '/members/initial-points',
   MEMBER_DETAIL: '/members/:memberId',
   // 회원 상태 변경 (ADM-MBR-02-01)
   MEMBER_STATUS: '/members/:memberId/status',

@@ -47,3 +47,12 @@ export type MemberFilters = {
   // 1부터 시작
   page: number;
 };
+
+// 이상 거래 상세(ADM-MON-02)에서 회원 정지로 진입하면 사유를 채워 넘기고, 처리 후 그 화면으로 돌아갑니다.
+export type MemberStatusLocationState = {
+  status?: MemberStatus;
+  reason?: string;
+  returnTo?: string;
+} | null;
+
+export type MemberPointsType = 'GRANT' | 'REVOKE';

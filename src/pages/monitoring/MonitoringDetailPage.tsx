@@ -14,9 +14,10 @@ import { AbnormalTradeStatusBadge } from '@/components/monitoring/AbnormalTradeS
 import { NoIssueConfirmModal } from '@/components/monitoring/NoIssueConfirmModal';
 import { ABNORMAL_TRADE_ACTION_OPTIONS, ABNORMAL_TRADE_TYPE_LABELS } from '@/constants/monitoring';
 import { getAbnormalTradeDetailPreview } from '@/constants/monitoringPreview';
-import { getProductTradingPath, ROUTES } from '@/constants/routes';
+import { getMemberStatusPath, getProductTradingPath } from '@/constants/routes';
 import type { AbnormalTradeActionForm } from '@/schemas/monitoringSchema';
 import { abnormalTradeActionSchema } from '@/schemas/monitoringSchema';
+import type { MemberStatusLocationState } from '@/types/member';
 import type { AbnormalTradeStatus } from '@/types/monitoring';
 import type { ProductTradingLocationState } from '@/types/product';
 import { formatDateTimeText } from '@/utils/date';
@@ -58,8 +59,13 @@ export default function MonitoringDetailPage() {
       void navigate(getProductTradingPath(trade.productId), { state });
       return;
     }
-    // TODO(MOTU-28): 회원 상태 변경 화면(ADM-MBR-02-01)으로 대상 회원과 사유를 넘깁니다.
-    void navigate(ROUTES.MEMBERS, { state: { memberId: trade.memberId, reason } });
+    // 회원 상태 변경 화면에서 정지를 선택해 두고, 처리·취소 후 이 상세로 돌아옵니다.
+    const state: MemberStatusLocationState = {
+      status: 'SUSPENDED',
+      reason,
+      returnTo: location.pathname,
+    };
+    void navigate(getMemberStatusPath(trade.memberId), { state });
   };
   // TODO(MOTU-25-1): 이상 없음 처리 API 연동 (처리완료로 변경, 관리자 활동 이력 기록)
   const handleConfirmNoIssue = () => {
