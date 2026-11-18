@@ -1,2 +1,5 @@
 // 서버 error.code 중 프론트에서 분기하는 값만 모아 둡니다.
 export const AUTH_TOKEN_EXPIRED = 'AUTH_TOKEN_EXPIRED';
+export const AUTH_INVALID_CREDENTIALS = 'AUTH_INVALID_CREDENTIALS';
+export const AUTH_ACCOUNT_LOCKED = 'AUTH_ACCOUNT_LOCKED';
+export const AUTH_ACCOUNT_BLOCKED = 'AUTH_ACCOUNT_BLOCKED';
