@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { Button } from '@/components/common/Button';
@@ -6,6 +7,12 @@ import { InfoRow } from '@/components/common/InfoRow';
 import { EvidencePreviewModal } from '@/components/listing/EvidencePreviewModal';
 import { PriceBasisModal } from '@/components/listing/PriceBasisModal';
 import { NOT_SUBMITTED_LABEL } from '@/constants/listing';
+import { useObjectUrl } from '@/hooks/useObjectUrl';
+import {
+  getListingAttachmentQueryOptions,
+  useListingAttachmentQuery,
+} from '@/queries/useListingAttachmentQuery';
+import { openExternalLink, saveBlob } from '@/utils/file';
 import type { ListingApplicationDetail, ListingEvidenceFile } from '@/types/listing';
 import { formatNumber } from '@/utils/format';
 
@@ -14,6 +21,8 @@ type ListingCardProps = {
 };
 
 const orNotSubmitted = (value: string | null) => value ?? NOT_SUBMITTED_LABEL;
+const formatOrNotSubmitted = (value: number | null, unit: string) =>
+  value === null ? NOT_SUBMITTED_LABEL : `${formatNumber(value)}${unit}`;
 
 type ListingSummaryCardProps = ListingCardProps & {
   className?: string;
@@ -32,26 +41,39 @@ export function ListingSummaryCard({
       title="상품 요약"
       className={className}
       items={[
-        { label: '상품명', value: application.productName },
-        { label: '카테고리', value: application.categoryDetail },
-        { label: '운영사', value: application.operatorName },
-        { label: '공식 URL', value: application.officialUrl },
+        { label: '상품명', value: orNotSubmitted(application.serviceName) },
+        { label: '카테고리', value: orNotSubmitted(application.sectorName) },
+        { label: '운영사', value: orNotSubmitted(application.operatorName) },
+        { label: '공식 URL', value: orNotSubmitted(application.officialUrl) },
       ]}
     >
       {hasImage && (
         <div className="flex items-start justify-between gap-4">
           <p className="text-body-sm font-medium text-motu-text-tertiary">대표 이미지</p>
-          {/* TODO(MOTU-21-1): 대표 이미지 URL 로 교체합니다. 지금은 상품명 자리표시만 보여줍니다. */}
-          <div
-            role="img"
-            aria-label={`${application.productName} 대표 이미지`}
-            className="flex size-[72px] shrink-0 items-center justify-center overflow-hidden rounded-lg border border-motu-border bg-motu-bg-secondary p-1 text-center text-label-sm font-medium text-motu-text-tertiary"
-          >
-            {application.productName}
-          </div>
+          <ListingMainImage application={application} />
         </div>
       )}
     </InfoCard>
+  );
+}
+
+// 대표 이미지 썸네일 (인증이 필요한 파일이라 받아서 표시합니다)
+function ListingMainImage({ application }: ListingCardProps) {
+  const attachmentId = application.mainImage?.attachmentId ?? null;
+  const { data } = useListingAttachmentQuery(application.id, attachmentId);
+  const imageUrl = useObjectUrl(data);
+  const name = application.serviceName ?? '상품';
+
+  return (
+    <div className="flex size-[72px] shrink-0 items-center justify-center overflow-hidden rounded-lg border border-motu-border bg-motu-bg-secondary p-1 text-center text-label-sm font-medium text-motu-text-tertiary">
+      {imageUrl ? (
+        <img src={imageUrl} alt={`${name} 대표 이미지`} className="size-full object-cover" />
+      ) : attachmentId ? (
+        '불러오는 중'
+      ) : (
+        NOT_SUBMITTED_LABEL
+      )}
+    </div>
   );
 }
 
@@ -62,14 +84,16 @@ export function ListingBasicInfoCard({ application }: ListingCardProps) {
       title="신청서 상세"
       className="flex-1"
       items={[
-        { label: '한 줄 소개', value: application.oneLineIntro },
-        { label: '상세 설명', value: application.description },
+        { label: '한 줄 소개', value: orNotSubmitted(application.summary) },
+        { label: '상세 설명', value: orNotSubmitted(application.description) },
       ]}
     >
       <h3 className="mt-0.5 text-body-md font-bold text-motu-text-primary">운영·담당자 정보</h3>
       <dl className="flex flex-col gap-3.5">
-        <InfoRow label="운영사" value={application.operatorName} />
-        <InfoRow label="담당자" value={application.managerName} />
+        <InfoRow label="운영사" value={orNotSubmitted(application.operatorName)} />
+        <InfoRow label="담당자" value={orNotSubmitted(application.managerName)} />
+        <InfoRow label="업무용 이메일" value={orNotSubmitted(application.managerEmail)} />
+        <InfoRow label="담당자 연락처" value={orNotSubmitted(application.managerPhone)} />
       </dl>
     </InfoCard>
   );
@@ -84,11 +108,11 @@ export function ListingTradingCard({ application }: ListingCardProps) {
       title="평가·거래 정보"
       className="flex-1"
       items={[
-        { label: '희망 상장가', value: `${formatNumber(application.desiredPrice)}P` },
-        { label: '총 발행량', value: `${formatNumber(application.totalSupply)}주` },
+        { label: '희망 상장가', value: formatOrNotSubmitted(application.desiredPrice, 'P') },
+        { label: '총 발행량', value: formatOrNotSubmitted(application.totalSupply, '주') },
         {
           label: '최소 주문 / 호가',
-          value: `${formatNumber(application.minOrderQuantity)}주 / ${formatNumber(application.tickSize)}P`,
+          value: `${formatOrNotSubmitted(application.minOrderQuantity, '주')} / ${formatOrNotSubmitted(application.tickSize, 'P')}`,
         },
       ]}
     >
@@ -101,9 +125,9 @@ export function ListingTradingCard({ application }: ListingCardProps) {
       <PriceBasisModal
         isOpen={isPriceBasisOpen}
         onClose={() => setIsPriceBasisOpen(false)}
-        applicationId={application.applicationId}
-        productName={application.productName}
-        priceBasis={application.priceBasis}
+        applicationNumber={application.applicationNumber}
+        productName={application.serviceName ?? '-'}
+        priceBasis={orNotSubmitted(application.priceBasis)}
       />
     </InfoCard>
   );
@@ -112,20 +136,18 @@ export function ListingTradingCard({ application }: ListingCardProps) {
 // ADM-LST-02-02 서비스 지표 탭 (비어 있으면 '미제출')
 export function ListingMetricsCard({ application }: ListingCardProps) {
   const { metrics } = application;
-  const formatPeople = (value: number | null) =>
-    value === null ? NOT_SUBMITTED_LABEL : `${formatNumber(value)}명`;
 
   return (
     <InfoCard
       title="제출 지표"
       className="flex-1"
       items={[
-        { label: 'MAU', value: formatPeople(metrics.mau) },
-        { label: 'DAU', value: formatPeople(metrics.dau) },
+        { label: 'MAU', value: orNotSubmitted(metrics.mau) },
+        { label: 'DAU', value: orNotSubmitted(metrics.dau) },
         { label: '연간 매출', value: orNotSubmitted(metrics.annualRevenue) },
         { label: '매출 기간', value: orNotSubmitted(metrics.revenuePeriod) },
         { label: '매출 출처 · 추출일', value: orNotSubmitted(metrics.revenueSource) },
-        { label: '거래액 (최근 완료 12개월)', value: orNotSubmitted(metrics.transactionAmount) },
+        { label: metrics.transactionLabel, value: orNotSubmitted(metrics.transactionAmount) },
         { label: '거래액 기간', value: orNotSubmitted(metrics.transactionPeriod) },
         { label: '거래액 출처 · 추출일', value: orNotSubmitted(metrics.transactionSource) },
       ]}
@@ -138,8 +160,19 @@ export function ListingEvidenceCard({ application }: ListingCardProps) {
   const [previewFile, setPreviewFile] = useState<ListingEvidenceFile | null>(null);
   const { evidences } = application;
 
-  // TODO(MOTU-21-1): 원본 파일명으로 다운로드
-  const handleDownload = (file: ListingEvidenceFile) => void file;
+  const queryClient = useQueryClient();
+
+  // 파일은 원본 파일명으로 내려받고, 외부 링크는 새 탭으로 엽니다.
+  const handleDownload = async (file: ListingEvidenceFile) => {
+    if (file.kind === 'LINK') {
+      if (file.url) openExternalLink(file.url);
+      return;
+    }
+    const blob = await queryClient.fetchQuery(
+      getListingAttachmentQueryOptions(application.id, file.attachmentId),
+    );
+    saveBlob(blob, file.fileName);
+  };
 
   return (
     <section className="flex flex-col gap-3.5 rounded-[14px] border border-motu-border bg-white px-6 py-5">
@@ -169,7 +202,7 @@ export function ListingEvidenceCard({ application }: ListingCardProps) {
           </div>
           {evidences.map((file) => (
             <div
-              key={file.fileId}
+              key={file.attachmentId}
               role="row"
               className="flex h-14 items-center gap-4 border-t border-motu-border px-4 text-center"
             >
@@ -189,8 +222,8 @@ export function ListingEvidenceCard({ application }: ListingCardProps) {
                 <Button variant="secondary" size="sm" onClick={() => setPreviewFile(file)}>
                   미리보기
                 </Button>
-                <Button variant="secondary" size="sm" onClick={() => handleDownload(file)}>
-                  다운로드
+                <Button variant="secondary" size="sm" onClick={() => void handleDownload(file)}>
+                  {file.kind === 'LINK' ? '링크 열기' : '다운로드'}
                 </Button>
               </span>
             </div>
@@ -200,7 +233,8 @@ export function ListingEvidenceCard({ application }: ListingCardProps) {
       <EvidencePreviewModal
         file={previewFile}
         onClose={() => setPreviewFile(null)}
-        onDownload={handleDownload}
+        applicationId={application.id}
+        onDownload={(file) => void handleDownload(file)}
       />
     </section>
   );

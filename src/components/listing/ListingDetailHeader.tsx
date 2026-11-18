@@ -5,7 +5,8 @@ import { ListingStatusBadge } from '@/components/listing/ListingStatusBadge';
 import type { ListingApplicationStatus } from '@/types/listing';
 
 type ListingDetailHeaderProps = {
-  applicationId: string;
+  // 화면 표시용 신청번호 (LST-260831-018)
+  applicationNumber: string;
   applicantName: string;
   status: ListingApplicationStatus;
   // [목록으로] 이동 경로 (검색 조건 유지)
@@ -14,7 +15,7 @@ type ListingDetailHeaderProps = {
 
 // 신청번호·신청자·상태 (탭을 바꿔도 유지합니다)
 export function ListingDetailHeader({
-  applicationId,
+  applicationNumber,
   applicantName,
   status,
   listPath,
@@ -25,7 +26,7 @@ export function ListingDetailHeader({
         ‹ 목록으로
       </Link>
       <h2 className="text-title-lg font-bold text-motu-text-primary">
-        {applicationId} · {applicantName}
+        {applicationNumber} · {applicantName}
       </h2>
       <ListingStatusBadge status={status} />
     </div>
