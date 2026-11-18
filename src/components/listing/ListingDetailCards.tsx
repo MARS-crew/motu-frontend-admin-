@@ -155,7 +155,7 @@ export function ListingEvidenceCard({ application }: ListingCardProps) {
         <div role="table" className="overflow-hidden rounded-lg border border-motu-border">
           <div
             role="row"
-            className="flex h-10 items-center gap-4 bg-motu-bg-secondary px-4 text-body-sm font-medium text-motu-text-secondary"
+            className="flex h-10 items-center gap-4 bg-motu-bg-secondary px-4 text-center text-body-sm font-medium text-motu-text-secondary"
           >
             <span role="columnheader" className="min-w-0 flex-1">
               파일명
@@ -171,7 +171,7 @@ export function ListingEvidenceCard({ application }: ListingCardProps) {
             <div
               key={file.fileId}
               role="row"
-              className="flex h-14 items-center gap-4 border-t border-motu-border px-4"
+              className="flex h-14 items-center gap-4 border-t border-motu-border px-4 text-center"
             >
               <span
                 role="cell"
@@ -185,7 +185,7 @@ export function ListingEvidenceCard({ application }: ListingCardProps) {
               >
                 {file.sizeLabel}
               </span>
-              <span role="cell" className="flex w-[180px] shrink-0 justify-end gap-2">
+              <span role="cell" className="flex w-[180px] shrink-0 justify-center gap-2">
                 <Button variant="secondary" size="sm" onClick={() => setPreviewFile(file)}>
                   미리보기
                 </Button>

@@ -69,10 +69,8 @@ export default function PasswordChangePage() {
             />
           </Field>
         </div>
-        <div className="flex flex-col gap-1">
-          <FieldMessage errorMessage={errorMessage} />
-          <FieldMessage helperText={PASSWORD_RULE_TEXT} />
-        </div>
+        <FieldMessage errorMessage={errorMessage} isReserved />
+        <FieldMessage helperText={PASSWORD_RULE_TEXT} />
       </div>
       <div className="flex w-full justify-end">
         <Button type="submit" disabled={!isValid}>

@@ -172,8 +172,9 @@ export default function ProductEditPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
+        {/* 상품 소개 칸은 공식 URL 입력칸 위쪽부터 대표 이미지 입력칸 아래쪽까지 채웁니다. */}
         <Field label="상품 소개" htmlFor="intro">
-          <TextArea id="intro" {...register('intro')} />
+          <TextArea id="intro" size="fill" {...register('intro')} />
         </Field>
         <div className="flex flex-col gap-3">
           <Field label="공식 URL" htmlFor="officialUrl" errorMessage={errors.officialUrl?.message}>

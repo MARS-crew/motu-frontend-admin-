@@ -56,14 +56,12 @@ export default function PasswordResetConfirmPage() {
             />
           </Field>
         </div>
-        {/* 오류가 있으면 오류 → 비밀번호 조건, 없으면 비밀번호 조건 → 확인값 안내 */}
-        <div className="flex flex-col gap-1">
-          <FieldMessage errorMessage={errorMessage} />
-          <FieldMessage helperText={PASSWORD_RULE_TEXT} />
-          {!errorMessage && (
-            <FieldMessage helperText="새 비밀번호와 확인값을 동일하게 입력해 주세요." />
-          )}
-        </div>
+        {/* 첫 줄은 확인값 안내 자리이고, 오류가 나면 같은 자리에 오류를 표시합니다. */}
+        <FieldMessage
+          errorMessage={errorMessage}
+          helperText="새 비밀번호와 확인값을 동일하게 입력해 주세요."
+        />
+        <FieldMessage helperText={PASSWORD_RULE_TEXT} />
       </div>
       <div className="flex w-full justify-end">
         <Button type="submit" disabled={!isValid}>
