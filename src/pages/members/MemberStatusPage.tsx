@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 import { Button } from '@/components/common/Button';
 import { Chip } from '@/components/common/Chip';
 import { Field } from '@/components/common/Field';
+import { FieldMessage } from '@/components/common/FieldMessage';
 import { InfoCard } from '@/components/common/InfoCard';
 import { PageHeading } from '@/components/common/PageHeading';
 import { PlaceholderSection } from '@/components/common/PlaceholderSection';
@@ -91,11 +92,7 @@ export default function MemberStatusPage() {
                 </div>
               )}
             />
-            {errors.status && (
-              <p role="alert" className="text-label-md font-medium text-motu-btn-red">
-                {errors.status.message}
-              </p>
-            )}
+            <FieldMessage errorMessage={errors.status?.message} isReserved />
           </div>
         </fieldset>
         <Field label="변경 사유 *" htmlFor="reason" errorMessage={errors.reason?.message}>

@@ -26,7 +26,10 @@ export default function LoginPage() {
   // TODO(MOTU-18-1): 로그인 API 연동
   // - 정상 계정 → 대시보드, 최초 로그인(임시 비밀번호) → 최초 비밀번호 변경
   // - 정지·탈퇴 계정 → 접근 차단 화면, 일반 회원 → 접근 차단
+  // - 로그인 실패 안내는 errorMessage 자리(비밀번호 칸 아래)에 표시
   const handleLogin = () => {};
+
+  const errorMessage = errors.loginId?.message ?? errors.password?.message;
 
   // 로그인 API 연동 전까지 레이아웃을 확인하기 위한 개발용 버튼입니다. (개발 서버에서만 노출)
   // 로그인 상태가 되면 PublicOnlyRoute 가 원래 보던 화면으로 이동시킵니다.
@@ -34,12 +37,7 @@ export default function LoginPage() {
 
   return (
     <AuthCard title="관리자 로그인" size="sm" onSubmit={handleSubmit(handleLogin)}>
-      <Field
-        label="관리자 아이디"
-        htmlFor="loginId"
-        errorMessage={errors.loginId?.message}
-        className="w-full"
-      >
+      <Field label="관리자 아이디" htmlFor="loginId" className="w-full">
         <TextInput
           id="loginId"
           autoComplete="username"
@@ -47,12 +45,8 @@ export default function LoginPage() {
           {...register('loginId')}
         />
       </Field>
-      <Field
-        label="비밀번호"
-        htmlFor="password"
-        errorMessage={errors.password?.message}
-        className="w-full"
-      >
+      {/* 아이디·비밀번호 오류와 로그인 실패 안내는 비밀번호 칸 아래 고정 자리에 하나만 표시합니다. */}
+      <Field label="비밀번호" htmlFor="password" errorMessage={errorMessage} className="w-full">
         <TextInput
           id="password"
           type="password"

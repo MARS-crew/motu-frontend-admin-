@@ -22,7 +22,7 @@ type TableProps<Row> = {
   selectedRowKey?: string | null;
 };
 
-// 관리자 목록 테이블입니다. 헤더 44px, 행 52px.
+// 관리자 목록 테이블입니다. 헤더 44px, 행 52px. 모든 열은 가운데 정렬합니다.
 export function Table<Row>({
   columns,
   rows,
@@ -49,7 +49,7 @@ export function Table<Row>({
           <div
             key={column.id}
             role="columnheader"
-            className="flex items-center px-4 text-label-md font-medium text-motu-text-secondary"
+            className="flex items-center justify-center px-4 text-center text-label-md font-medium text-motu-text-secondary"
           >
             {column.header}
           </div>
@@ -83,7 +83,7 @@ export function Table<Row>({
                   key={column.id}
                   role="cell"
                   className={cn(
-                    'flex min-w-0 items-center truncate px-4 text-body-sm',
+                    'flex min-w-0 items-center justify-center truncate px-4 text-center text-body-sm',
                     column.isEmphasized
                       ? 'font-bold text-motu-text-primary'
                       : 'font-medium text-motu-text-secondary',

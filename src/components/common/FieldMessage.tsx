@@ -5,17 +5,20 @@ import { cn } from '@/utils/cn';
 type FieldMessageProps = {
   errorMessage?: string;
   helperText?: string;
+  // 문구가 없어도 한 줄 높이를 비워 둡니다. 문구가 나타날 때 아래 버튼·입력칸이 밀리지 않습니다.
+  isReserved?: boolean;
 };
 
-export function FieldMessage({ errorMessage, helperText }: FieldMessageProps) {
+export function FieldMessage({ errorMessage, helperText, isReserved = false }: FieldMessageProps) {
   const message = errorMessage ?? helperText;
-  if (!message) return null;
+  if (!message && !isReserved) return null;
 
   return (
     <p
       role={errorMessage ? 'alert' : undefined}
+      aria-hidden={message ? undefined : true}
       className={cn(
-        'w-full text-label-md font-medium',
+        'min-h-4 w-full text-label-md font-medium',
         errorMessage ? 'text-motu-btn-red' : 'text-motu-text-tertiary',
       )}
     >

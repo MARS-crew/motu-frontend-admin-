@@ -61,15 +61,15 @@ export default function PasswordResetRequestPage() {
           </Field>
           <Button type="submit">재설정 링크 보내기</Button>
         </div>
-        {emailError && (
+        {/* 안내와 오류는 같은 자리에 번갈아 표시해 카드 높이가 바뀌지 않게 합니다. */}
+        {emailError ? (
           <Notice tone="danger" className="w-full">
             {emailError}
           </Notice>
+        ) : (
+          <Notice className="w-full">입력 정보가 확인되면 이메일로 링크를 보냅니다.</Notice>
         )}
       </div>
-      {!emailError && (
-        <Notice className="w-full">입력 정보가 확인되면 이메일로 링크를 보냅니다.</Notice>
-      )}
     </AuthCard>
   );
 }
