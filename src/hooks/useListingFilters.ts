@@ -13,7 +13,7 @@ const getDefaultPeriod = () => {
   };
 };
 
-// 상장 신청 목록의 검색 조건을 URL 쿼리로 관리합니다.
+// 상장 신청 목록의 검색 조건과 페이지를 URL 쿼리로 관리합니다.
 // 상세에서 [목록으로] 돌아와도 같은 쿼리로 검색 조건이 유지됩니다.
 // 신청 기간 쿼리가 없으면 최근 30일, 빈 값(from=&to=)이면 전체 기간입니다.
 export const useListingFilters = () => {
@@ -24,23 +24,31 @@ export const useListingFilters = () => {
     return {
       status: (searchParams.get('status') as ListingApplicationFilters['status']) ?? 'ALL',
       applicant: searchParams.get('applicant') ?? '',
-      category: (searchParams.get('category') as ListingApplicationFilters['category']) ?? 'ALL',
+      sectorCode: searchParams.get('sector') ?? 'ALL',
       appliedFrom: searchParams.has('from')
         ? searchParams.get('from') || null
         : defaultPeriod.appliedFrom,
       appliedTo: searchParams.has('to') ? searchParams.get('to') || null : defaultPeriod.appliedTo,
+      page: Math.max(Number(searchParams.get('page')) || 1, 1),
     };
   }, [searchParams]);
 
-  const applyFilters = (next: ListingApplicationFilters) => {
+  const toParams = (next: ListingApplicationFilters) => {
     const params = new URLSearchParams();
     if (next.status !== 'ALL') params.set('status', next.status);
     if (next.applicant.trim()) params.set('applicant', next.applicant.trim());
-    if (next.category !== 'ALL') params.set('category', next.category);
+    if (next.sectorCode !== 'ALL') params.set('sector', next.sectorCode);
     params.set('from', next.appliedFrom ?? '');
     params.set('to', next.appliedTo ?? '');
-    setSearchParams(params);
+    if (next.page > 1) params.set('page', String(next.page));
+    return params;
   };
 
-  return { filters, applyFilters };
+  // 검색 조건을 바꾸면 첫 페이지부터 봅니다.
+  const applyFilters = (next: Omit<ListingApplicationFilters, 'page'>) =>
+    setSearchParams(toParams({ ...next, page: 1 }));
+
+  const changePage = (page: number) => setSearchParams(toParams({ ...filters, page }));
+
+  return { filters, applyFilters, changePage };
 };

@@ -74,3 +74,12 @@ export const formatShortDate = (value: string) => value.slice(2, 10).replaceAll(
 
 // 2026-09-01 → 2026. 09. 01
 export const formatSpacedDate = (value: string) => value.slice(0, 10).replaceAll('-', '. ');
+
+// API 일시(ISO, UTC) → 브라우저(KST) 기준 '2026-09-01T09:00'
+export const toLocalDateTime = (value: string) => {
+  const date = new Date(value);
+  return `${toISODate(date)}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+// 화면에서 고른 날짜(YYYY-MM-DD)의 KST 자정 → API 일시 '2026-09-01T00:00:00+09:00'
+export const toKSTStartOfDay = (value: string) => `${value}T00:00:00+09:00`;

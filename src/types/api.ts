@@ -17,3 +17,11 @@ export type CursorPage<T> = {
   items: T[];
   nextCursor: string | null;
 };
+
+// 관리자 목록 API 의 페이지 응답입니다. (page 는 1부터)
+export type PageResponse<T> = {
+  items: T[];
+  page: number;
+  size: number;
+  totalCount: number;
+};

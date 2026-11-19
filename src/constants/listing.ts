@@ -47,6 +47,9 @@ export const LISTING_CATEGORY_FILTER_OPTIONS: SelectOption<ListingCategory | 'AL
   ...toOptions(LISTING_CATEGORY_LABELS),
 ];
 
+// 상장 신청 목록 한 페이지 건수
+export const LISTING_PAGE_SIZE = 20;
+
 // 신청 기간 기본값: 최근 30일
 export const DEFAULT_APPLIED_PERIOD_DAYS = 30;
 

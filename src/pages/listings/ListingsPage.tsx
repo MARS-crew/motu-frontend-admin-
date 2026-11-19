@@ -1,32 +1,30 @@
+import { Pagination } from '@/components/common/Pagination';
 import { ListingApplicationTable } from '@/components/listing/ListingApplicationTable';
 import { ListingFilterCard } from '@/components/listing/ListingFilterCard';
-import { LISTING_APPLICATIONS_PREVIEW } from '@/constants/listingPreview';
 import { useListingFilters } from '@/hooks/useListingFilters';
-import type { ListingApplicationFilters, ListingApplicationSummary } from '@/types/listing';
+import { useListingApplicationsQuery } from '@/queries/useListingApplicationsQuery';
+import { getApiErrorMessage } from '@/utils/apiError';
 
-// TODO(MOTU-20-1): 서버 검색·정렬·페이징으로 교체합니다.
-// 퍼블리싱 확인용으로 예시 데이터를 상태·신청자·카테고리로만 거릅니다.
-const filterPreview = (
-  applications: ListingApplicationSummary[],
-  filters: ListingApplicationFilters,
-) =>
-  applications.filter(
-    (application) =>
-      (filters.status === 'ALL' || application.status === filters.status) &&
-      (filters.category === 'ALL' || application.category === filters.category) &&
-      application.applicantName.includes(filters.applicant.trim()),
-  );
-
-// ADM-LST-01 상장 신청 목록
+// ADM-LST-01 상장 신청 목록 (최근 접수순, 한 페이지 20건)
 export default function ListingsPage() {
-  const { filters, applyFilters } = useListingFilters();
-  const applications = filterPreview(LISTING_APPLICATIONS_PREVIEW, filters);
+  const { filters, applyFilters, changePage } = useListingFilters();
+  const { data, isPending, isError, error } = useListingApplicationsQuery(filters);
+
+  const emptyMessage = isPending
+    ? '상장 신청을 불러오는 중입니다.'
+    : isError
+      ? getApiErrorMessage(error)
+      : undefined;
 
   return (
     <div className="flex flex-col gap-5">
       {/* 쿼리가 바뀌면(목록 복귀 등) 입력값을 다시 맞춥니다. */}
       <ListingFilterCard key={JSON.stringify(filters)} filters={filters} onSearch={applyFilters} />
-      <ListingApplicationTable applications={applications} />
+      <ListingApplicationTable
+        applications={data?.applications ?? []}
+        emptyMessage={emptyMessage}
+      />
+      <Pagination page={filters.page} totalPages={data?.totalPages ?? 1} onChange={changePage} />
     </div>
   );
 }

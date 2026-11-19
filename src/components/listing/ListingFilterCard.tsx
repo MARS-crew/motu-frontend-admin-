@@ -6,23 +6,25 @@ import { DateRangeField } from '@/components/common/DateRangeField';
 import { Field } from '@/components/common/Field';
 import { Select } from '@/components/common/Select';
 import { TextInput } from '@/components/common/TextInput';
-import {
-  LISTING_CATEGORY_FILTER_OPTIONS,
-  LISTING_STATUS_FILTER_OPTIONS,
-} from '@/constants/listing';
+import { LISTING_STATUS_FILTER_OPTIONS } from '@/constants/listing';
+import { useSectorsQuery } from '@/queries/useSectorsQuery';
 import type { ListingApplicationFilters } from '@/types/listing';
 import { parseISODate, toISODate } from '@/utils/date';
+import { toSectorFilterOptions } from '@/utils/sector';
+
+type ListingSearchFilters = Omit<ListingApplicationFilters, 'page'>;
 
 type ListingFilterCardProps = {
-  filters: ListingApplicationFilters;
-  onSearch: (filters: ListingApplicationFilters) => void;
+  filters: ListingSearchFilters;
+  onSearch: (filters: ListingSearchFilters) => void;
 };
 
 // ADM-LST-01 검색 조건 (입력값은 [검색]을 눌렀을 때 목록에 반영합니다)
 export function ListingFilterCard({ filters, onSearch }: ListingFilterCardProps) {
   const [draft, setDraft] = useState(filters);
+  const { data: sectors } = useSectorsQuery();
 
-  const updateDraft = (next: Partial<ListingApplicationFilters>) =>
+  const updateDraft = (next: Partial<ListingSearchFilters>) =>
     setDraft((prev) => ({ ...prev, ...next }));
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -46,7 +48,7 @@ export function ListingFilterCard({ filters, onSearch }: ListingFilterCardProps)
       <Field label="신청자" htmlFor="filter-applicant" className="flex-1">
         <TextInput
           id="filter-applicant"
-          placeholder="이름·아이디"
+          placeholder="닉네임·아이디"
           value={draft.applicant}
           onChange={(event) => updateDraft({ applicant: event.target.value })}
         />
@@ -54,9 +56,9 @@ export function ListingFilterCard({ filters, onSearch }: ListingFilterCardProps)
       <Field label="카테고리" htmlFor="filter-category" className="flex-1">
         <Select
           id="filter-category"
-          options={LISTING_CATEGORY_FILTER_OPTIONS}
-          value={draft.category}
-          onChange={(category) => updateDraft({ category })}
+          options={toSectorFilterOptions(sectors)}
+          value={draft.sectorCode}
+          onChange={(sectorCode) => updateDraft({ sectorCode })}
         />
       </Field>
       <Field label="신청 기간" htmlFor="filter-period" className="flex-1">

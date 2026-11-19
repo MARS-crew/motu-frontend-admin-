@@ -14,14 +14,50 @@ export type ListingApplicationSummary = {
   status: ListingApplicationStatus;
 };
 
+export type ListingApplicant = {
+  userId: number;
+  loginId: string;
+  nickname: string;
+};
+
+// GET /admin/listing-applications 목록 항목
+export type ListingApplicationItem = {
+  // 상세 조회에 쓰는 ID
+  id: number;
+  // 화면 표시용 신청번호 (LST-260831-018)
+  applicationNumber: string;
+  serviceName: string | null;
+  sectorCode: number | null;
+  sectorName: string | null;
+  // ISO 일시 (UTC)
+  submittedAt: string;
+  status: ListingApplicationStatus;
+  statusLabel: string;
+  applicant: ListingApplicant;
+};
+
+export type ListingApplicationsParams = {
+  status?: ListingApplicationStatus;
+  applicant?: string;
+  sectorCode?: number;
+  // 접수 기간 (from 포함, to 미포함, 시간대 포함 ISO 일시)
+  from?: string;
+  to?: string;
+  page: number;
+  size: number;
+};
+
 export type ListingApplicationFilters = {
   status: ListingApplicationStatus | 'ALL';
-  // 이름 또는 아이디
+  // 닉네임 또는 아이디
   applicant: string;
-  category: ListingCategory | 'ALL';
+  // 카테고리 코드 (GET /sectors), 전체면 'ALL'
+  sectorCode: string;
   // YYYY-MM-DD, 둘 다 비우면 전체 기간
   appliedFrom: string | null;
   appliedTo: string | null;
+  // 1부터
+  page: number;
 };
 
 export type ListingDetailTab = 'basic' | 'trading' | 'metrics' | 'evidence';
