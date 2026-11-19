@@ -104,3 +104,10 @@ export type ChangeUserStatusRequest = {
   // 정지(BLOCKED)일 때만 보낼 수 있고, 그 이상 거래를 처리완료로 바꿉니다.
   anomalyId?: number;
 };
+
+// PATCH /admin/accounts/{userId}/cash 응답
+export type AdjustCashResponse = {
+  amount: number;
+  cashBefore: number;
+  cashAfter: number;
+};
