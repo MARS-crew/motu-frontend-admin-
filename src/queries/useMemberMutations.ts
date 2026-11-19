@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { patchAdminAccountCash } from '@/apis/adminAccount';
 import { patchAdminUserStatus, postUnlockAdminUser } from '@/apis/adminUser';
 import { ACTIVITY_LOGS_QUERY_KEY } from '@/queries/useActivityLogsQuery';
 import { MEMBERS_QUERY_KEY } from '@/queries/useMembersQuery';
@@ -28,6 +29,17 @@ export const useUnlockMemberMutation = (userId: number) => {
   const invalidate = useInvalidateMember();
   return useMutation({
     mutationFn: (reason: string) => postUnlockAdminUser(userId, reason),
+    retry: false,
+    onSuccess: invalidate,
+  });
+};
+
+// 포인트 지급·회수 (amount 가 음수면 회수)
+export const useAdjustMemberPointsMutation = (userId: number) => {
+  const invalidate = useInvalidateMember();
+  return useMutation({
+    mutationFn: ({ amount, reason }: { amount: number; reason: string }) =>
+      patchAdminAccountCash(userId, amount, reason),
     retry: false,
     onSuccess: invalidate,
   });

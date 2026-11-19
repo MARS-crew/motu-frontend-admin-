@@ -11,7 +11,9 @@ import { PageHeading } from '@/components/common/PageHeading';
 import { PlaceholderSection } from '@/components/common/PlaceholderSection';
 import { TextArea } from '@/components/common/TextArea';
 import { PointInput } from '@/components/member/PointInput';
+import { useAdjustMemberPointsMutation } from '@/queries/useMemberMutations';
 import { useMemberDetailQuery } from '@/queries/useMembersQuery';
+import { getApiErrorMessage } from '@/utils/apiError';
 import { getMemberDetailPath } from '@/constants/routes';
 import type { MemberPointsForm } from '@/schemas/memberSchema';
 import { createMemberPointsSchema, toPointNumber } from '@/schemas/memberSchema';
@@ -29,6 +31,11 @@ export default function MemberPointsPage() {
   const navigate = useNavigate();
 
   const { data: member } = useMemberDetailQuery(Number(memberId));
+  const {
+    mutate: adjustPoints,
+    isPending,
+    error,
+  } = useAdjustMemberPointsMutation(Number(memberId));
   const availablePoints = member?.availablePoints ?? 0;
   const schema = createMemberPointsSchema(availablePoints);
 
@@ -61,8 +68,14 @@ export default function MemberPointsPage() {
   const detailPath = getMemberDetailPath(member.memberId);
   // 취소하면 포인트 변경 없이 회원 상세로 돌아갑니다.
   const handleCancel = () => void navigate(detailPath);
-  // TODO(MOTU-28-1): 포인트 지급·회수 API 연동 (PATCH /admin/accounts/{userId}/cash)
-  const handleProcess = () => void navigate(detailPath, { replace: true });
+  // 지급은 양수, 회수는 음수로 보냅니다. 처리 내용은 서버가 활동 이력에 저장합니다.
+  const handleProcess = (form: MemberPointsForm) => {
+    const points = toPointNumber(form.amount);
+    adjustPoints(
+      { amount: form.type === 'REVOKE' ? -points : points, reason: form.reason.trim() },
+      { onSuccess: () => void navigate(detailPath, { replace: true }) },
+    );
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -145,11 +158,13 @@ export default function MemberPointsPage() {
           />
         </Field>
 
+        {error && <Notice tone="danger">{getApiErrorMessage(error)}</Notice>}
+
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={handleCancel}>
             취소
           </Button>
-          <Button type="submit" variant={isRevoke ? 'danger' : 'primary'}>
+          <Button type="submit" variant={isRevoke ? 'danger' : 'primary'} disabled={isPending}>
             {isRevoke ? '회수 처리' : '지급 처리'}
           </Button>
         </div>
