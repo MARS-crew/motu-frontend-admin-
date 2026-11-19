@@ -12,14 +12,18 @@ import { Select } from '@/components/common/Select';
 import { TextArea } from '@/components/common/TextArea';
 import { AbnormalTradeStatusBadge } from '@/components/monitoring/AbnormalTradeStatusBadge';
 import { NoIssueConfirmModal } from '@/components/monitoring/NoIssueConfirmModal';
-import { ABNORMAL_TRADE_ACTION_OPTIONS, ABNORMAL_TRADE_TYPE_LABELS } from '@/constants/monitoring';
+import {
+  ABNORMAL_TRADE_ACTION_OPTIONS,
+  ABNORMAL_TRADE_TYPE_LABELS,
+  ANOMALY_ACTION_LABELS,
+} from '@/constants/monitoring';
 import { getMemberStatusPath, getProductTradingPath } from '@/constants/routes';
 import type { AbnormalTradeActionForm } from '@/schemas/monitoringSchema';
 import { abnormalTradeActionSchema } from '@/schemas/monitoringSchema';
 import type { MemberStatusLocationState } from '@/types/member';
-import type { AbnormalTradeStatus } from '@/types/monitoring';
 import type { ProductTradingLocationState } from '@/types/product';
 import { useAnomalyDetailQuery } from '@/queries/useAnomaliesQuery';
+import { useDismissAnomalyMutation, useReviewAnomalyMutation } from '@/queries/useAnomalyMutations';
 import { getApiErrorMessage } from '@/utils/apiError';
 import { formatDateTimeText } from '@/utils/date';
 
@@ -30,8 +34,10 @@ export default function MonitoringDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [noIssueReason, setNoIssueReason] = useState<string | null>(null);
-  // TODO(MOTU-25-1): 처리 결과는 API 응답으로 갱신합니다. 지금은 화면에서만 바꿉니다.
-  const [processedStatus, setProcessedStatus] = useState<AbnormalTradeStatus | null>(null);
+  const anomalyId = Number(alertId);
+  const review = useReviewAnomalyMutation(anomalyId);
+  const dismiss = useDismissAnomalyMutation(anomalyId);
+  const actionError = review.error ?? dismiss.error;
 
   const {
     control,
@@ -43,7 +49,7 @@ export default function MonitoringDetailPage() {
     defaultValues: { action: 'PAUSE_PRODUCT', reason: '' },
   });
 
-  const { data: trade, isPending, isError, error } = useAnomalyDetailQuery(Number(alertId));
+  const { data: trade, isPending, isError, error } = useAnomalyDetailQuery(anomalyId);
   if (isError) return <PlaceholderSection description={getApiErrorMessage(error)} />;
   if (isPending) {
     return (
@@ -57,31 +63,47 @@ export default function MonitoringDetailPage() {
     );
   }
 
-  const status = processedStatus ?? trade.status;
+  const { status } = trade;
+  // 상품과 관계없는 이상 거래는 거래 중지를 고를 수 없습니다.
+  const actionOptions = trade.productId
+    ? ABNORMAL_TRADE_ACTION_OPTIONS
+    : ABNORMAL_TRADE_ACTION_OPTIONS.filter((option) => option.value !== 'PAUSE_PRODUCT');
 
+  // 거래 중지·회원 정지는 '확인중'으로 바꾼 뒤 해당 화면으로 넘어가 그 화면에서 확정합니다.
+  // 확정하면 이 이상 거래도 처리완료로 바뀌고, 취소하면 확인중으로 남습니다.
   const handleConfirmAction = ({ action, reason }: AbnormalTradeActionForm) => {
+    dismiss.reset();
     if (action === 'NO_ISSUE') {
       setNoIssueReason(reason.trim());
       return;
     }
     if (action === 'PAUSE_PRODUCT') {
-      // 거래 중지 화면에서 확정·취소 후 이 상세로 돌아옵니다.
-      const state: ProductTradingLocationState = { reason, returnTo: location.pathname };
-      if (trade.productId) void navigate(getProductTradingPath(trade.productId), { state });
+      const { productId } = trade;
+      if (!productId) return;
+      const state: ProductTradingLocationState = {
+        reason,
+        returnTo: location.pathname,
+        anomalyId,
+      };
+      review.mutate('STOCK_PAUSE', {
+        onSuccess: () => void navigate(getProductTradingPath(productId), { state }),
+      });
       return;
     }
-    // 회원 상태 변경 화면에서 정지를 선택해 두고, 처리·취소 후 이 상세로 돌아옵니다.
     const state: MemberStatusLocationState = {
       status: 'BLOCKED',
       reason,
       returnTo: location.pathname,
+      anomalyId,
     };
-    void navigate(getMemberStatusPath(trade.memberId), { state });
+    review.mutate('USER_BLOCK', {
+      onSuccess: () => void navigate(getMemberStatusPath(trade.memberId), { state }),
+    });
   };
-  // TODO(MOTU-25-1): 이상 없음 처리 API 연동 (처리완료로 변경, 관리자 활동 이력 기록)
+  // 이상 없음은 이 화면에서 바로 처리완료로 바꾸고 관리자 활동 이력에 기록합니다.
   const handleConfirmNoIssue = () => {
-    setNoIssueReason(null);
-    setProcessedStatus('RESOLVED');
+    if (!noIssueReason) return;
+    dismiss.mutate(noIssueReason, { onSettled: () => setNoIssueReason(null) });
   };
 
   return (
@@ -111,9 +133,19 @@ export default function MonitoringDetailPage() {
       </div>
 
       {status === 'RESOLVED' ? (
-        <Notice tone="success">
-          처리완료된 이상 거래입니다. 처리 기록은 관리자 활동 이력에서 확인합니다.
-        </Notice>
+        <InfoCard
+          title="처리 결과"
+          items={[
+            { label: '조치', value: trade.action ? ANOMALY_ACTION_LABELS[trade.action] : '-' },
+            { label: '조치 사유', value: trade.actionReason ?? '-' },
+            {
+              label: '처리',
+              value: trade.handledAt
+                ? `${formatDateTimeText(trade.handledAt)} · ${trade.handlerLoginId ?? '-'}`
+                : '-',
+            },
+          ]}
+        />
       ) : (
         <form noValidate onSubmit={handleSubmit(handleConfirmAction)}>
           <InfoCard title="관리자 조치" className="gap-4">
@@ -130,7 +162,7 @@ export default function MonitoringDetailPage() {
                   render={({ field }) => (
                     <Select
                       id="action"
-                      options={ABNORMAL_TRADE_ACTION_OPTIONS}
+                      options={actionOptions}
                       value={field.value}
                       onChange={field.onChange}
                     />
@@ -150,8 +182,18 @@ export default function MonitoringDetailPage() {
                 />
               </Field>
             </div>
+            {status === 'REVIEWING' && trade.action && (
+              <Notice>
+                {ANOMALY_ACTION_LABELS[trade.action]} 화면으로 넘어간 뒤 아직 확정되지 않았습니다. (
+                {trade.handlerLoginId ?? '-'}
+                {trade.handledAt ? ` · ${formatDateTimeText(trade.handledAt)}` : ''})
+              </Notice>
+            )}
+            {actionError && <Notice tone="danger">{getApiErrorMessage(actionError)}</Notice>}
             <div className="flex justify-end">
-              <Button type="submit">조치 내용 확인</Button>
+              <Button type="submit" disabled={review.isPending || dismiss.isPending}>
+                조치 내용 확인
+              </Button>
             </div>
           </InfoCard>
         </form>
