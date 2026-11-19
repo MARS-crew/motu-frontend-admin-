@@ -13,20 +13,15 @@ import { Select } from '@/components/common/Select';
 import { TextArea } from '@/components/common/TextArea';
 import { TextInput } from '@/components/common/TextInput';
 import { ProductEditConfirmModal } from '@/components/product/ProductEditConfirmModal';
-import { LISTING_CATEGORY_LABELS } from '@/constants/listing';
 import { PRODUCT_EXPOSURE_LABELS } from '@/constants/product';
-import { getProductDetailPreview } from '@/constants/productPreview';
+import { useProductDetailQuery } from '@/queries/useProductDetailQuery';
+import { useSectorsQuery } from '@/queries/useSectorsQuery';
 import { getProductDetailPath } from '@/constants/routes';
 import type { ProductEditForm } from '@/schemas/productSchema';
 import { productEditSchema } from '@/schemas/productSchema';
-import type { ListingCategory } from '@/types/listing';
 import type { ProductExposure } from '@/types/product';
 import { formatDateTimeText } from '@/utils/date';
 import { formatNumber } from '@/utils/format';
-
-const CATEGORY_OPTIONS: SelectOption<ListingCategory>[] = (
-  Object.keys(LISTING_CATEGORY_LABELS) as ListingCategory[]
-).map((value) => ({ value, label: LISTING_CATEGORY_LABELS[value] }));
 
 const EXPOSURE_OPTIONS: SelectOption<ProductExposure>[] = [
   { value: 'PUBLIC', label: PRODUCT_EXPOSURE_LABELS.PUBLIC },
@@ -40,7 +35,13 @@ const normalizeNumber = (value: string) =>
   value.trim() ? formatNumber(Number(value.replaceAll(',', ''))) : '-';
 
 // 변경된 항목만 '변경 전 → 변경 후'로 보여줍니다. 긴 글은 '수정됨'으로 줄입니다.
-const getChangedRows = (before: ProductEditForm, after: ProductEditForm): InfoItem[] => {
+const getChangedRows = (
+  before: ProductEditForm,
+  after: ProductEditForm,
+  sectorOptions: SelectOption[],
+): InfoItem[] => {
+  const getSectorName = (code: string) =>
+    sectorOptions.find((option) => option.value === code)?.label ?? code;
   const rows: InfoItem[] = [];
   const pushIfChanged = (label: string, prev: string, next: string, isLongText = false) => {
     if (prev === next) return;
@@ -48,11 +49,7 @@ const getChangedRows = (before: ProductEditForm, after: ProductEditForm): InfoIt
   };
 
   pushIfChanged('상품명', before.productName, after.productName.trim());
-  pushIfChanged(
-    '카테고리',
-    LISTING_CATEGORY_LABELS[before.category as ListingCategory],
-    LISTING_CATEGORY_LABELS[after.category as ListingCategory],
-  );
+  pushIfChanged('카테고리', getSectorName(before.category), getSectorName(after.category));
   pushIfChanged(
     '노출 상태',
     PRODUCT_EXPOSURE_LABELS[before.exposure as ProductExposure],
@@ -83,11 +80,16 @@ export default function ProductEditPage() {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [confirmRows, setConfirmRows] = useState<InfoItem[] | null>(null);
 
-  // TODO(MOTU-23-1): 상장 상품 상세 API 연동
-  const product = getProductDetailPreview(productId);
+  const { data: product } = useProductDetailQuery(Number(productId));
+  const { data: sectors = [] } = useSectorsQuery();
+  const sectorOptions: SelectOption[] = sectors.map((sector) => ({
+    value: String(sector.sectorCode),
+    label: sector.sectorName,
+  }));
+  // 카테고리는 코드(GET /sectors)를 문자열로 다룹니다.
   const defaultValues: ProductEditForm = {
     productName: product?.productName ?? '',
-    category: product?.category ?? '',
+    category: product ? String(product.sectorCode) : '',
     exposure: product?.exposure ?? '',
     intro: product?.intro ?? '',
     officialUrl: product?.officialUrl ?? '',
@@ -104,9 +106,14 @@ export default function ProductEditPage() {
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm<ProductEditForm>({ resolver: zodResolver(productEditSchema), defaultValues });
+  } = useForm<ProductEditForm>({
+    resolver: zodResolver(productEditSchema),
+    // 상세를 받아오면 현재 값으로 채웁니다. 이미 고친 값은 유지합니다.
+    values: defaultValues,
+    resetOptions: { keepDirtyValues: true },
+  });
 
-  if (!product) return <PlaceholderSection description="상장 상품을 찾을 수 없습니다." />;
+  if (!product) return <PlaceholderSection description="상장 상품을 불러오는 중입니다." />;
 
   const detailPath = getProductDetailPath(product.productId);
 
@@ -118,7 +125,7 @@ export default function ProductEditPage() {
   };
   const handleCancel = () => void navigate(detailPath);
   const handleOpenConfirm = (form: ProductEditForm) =>
-    setConfirmRows(getChangedRows(defaultValues, form));
+    setConfirmRows(getChangedRows(defaultValues, form, sectorOptions));
   // TODO(MOTU-23-1): 상품 정보 수정 API 연동 (변경 전·후 값과 사유는 관리자 활동 이력에 저장)
   const handleSave = () => {
     setConfirmRows(null);
@@ -146,8 +153,8 @@ export default function ProductEditPage() {
             render={({ field }) => (
               <Select
                 id="category"
-                options={CATEGORY_OPTIONS}
-                value={field.value as ListingCategory | ''}
+                options={sectorOptions}
+                value={field.value}
                 onChange={field.onChange}
                 hasError={Boolean(errors.category)}
               />

@@ -3,9 +3,13 @@ import { useState } from 'react';
 import { InfoCard } from '@/components/common/InfoCard';
 import type { TableColumn } from '@/components/common/Table';
 import { Table } from '@/components/common/Table';
-import { LISTING_CATEGORY_LABELS } from '@/constants/listing';
 import { NOT_REGISTERED_LABEL, PRODUCT_EXPOSURE_LABELS } from '@/constants/product';
+import {
+  useProductHistoriesQuery,
+  useProductHistoryDetailQuery,
+} from '@/queries/useProductHistoriesQuery';
 import type { ProductDetail, ProductHistory } from '@/types/product';
+import { getApiErrorMessage } from '@/utils/apiError';
 import { formatDateTimeText, formatMonthDayTime } from '@/utils/date';
 import { formatNumber } from '@/utils/format';
 
@@ -22,14 +26,12 @@ export function ProductBasicInfoCards({ product }: ProductCardProps) {
         className="flex-1"
         items={[
           { label: '상품명', value: product.productName },
-          {
-            label: '카테고리',
-            value: product.categoryDetail || LISTING_CATEGORY_LABELS[product.category],
-          },
+          { label: '카테고리', value: product.sectorName },
           { label: '운영사', value: product.operatorName },
           { label: '노출 상태', value: PRODUCT_EXPOSURE_LABELS[product.exposure] },
-          { label: '공식 URL', value: product.officialUrl },
-          { label: '상품 소개', value: product.intro },
+          { label: '공식 URL', value: product.officialUrl || '-' },
+          { label: '한 줄 소개', value: product.summary },
+          { label: '상품 소개', value: product.intro || '-' },
         ]}
       />
       <InfoCard
@@ -44,6 +46,9 @@ export function ProductBasicInfoCards({ product }: ProductCardProps) {
           { label: '거래 시작', value: formatDateTimeText(product.tradeStartAt) },
           { label: '미체결 주문', value: `${formatNumber(product.openOrderCount)}건` },
           { label: '거래 상태', value: product.tradeStatusDescription },
+          ...(product.statusNotice
+            ? [{ label: '사용자 안내문', value: product.statusNotice }]
+            : []),
         ]}
       />
     </div>
@@ -79,9 +84,19 @@ export function ProductMetricsCard({ product }: ProductCardProps) {
 }
 
 // ADM-PRD-02-01 변경 이력 탭 (최신순, 행 선택 시 변경 전·후 값과 사유)
+// 변경 이력은 이 상품을 대상으로 한 관리자 활동 이력입니다.
 export function ProductHistorySection({ product }: ProductCardProps) {
-  const [selectedId, setSelectedId] = useState(product.histories[0]?.historyId ?? null);
-  const selected = product.histories.find((history) => history.historyId === selectedId);
+  const {
+    data: histories = [],
+    isPending,
+    isError,
+    error,
+  } = useProductHistoriesQuery(Number(product.productId));
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  // 선택 전에는 가장 최근 이력을 보여줍니다.
+  const selected =
+    histories.find((history) => history.historyId === selectedId) ?? histories[0] ?? null;
+  const { data: detail } = useProductHistoryDetailQuery(selected?.historyId ?? null);
 
   const columns: TableColumn<ProductHistory>[] = [
     {
@@ -95,25 +110,31 @@ export function ProductHistorySection({ product }: ProductCardProps) {
     { id: 'summary', header: '변경 요약', cell: (row) => row.summary, isEmphasized: true },
   ];
 
+  const emptyMessage = isPending
+    ? '변경 이력을 불러오는 중입니다.'
+    : isError
+      ? getApiErrorMessage(error)
+      : '변경 이력이 없습니다.';
+
   return (
     <>
       <Table
         columns={columns}
-        rows={product.histories}
-        getRowKey={(row) => row.historyId}
+        rows={histories}
+        getRowKey={(row) => String(row.historyId)}
         gridClassName="grid-cols-[1fr_1fr_1fr_2.2fr]"
-        emptyMessage="변경 이력이 없습니다."
+        emptyMessage={emptyMessage}
         onRowClick={(row) => setSelectedId(row.historyId)}
-        selectedRowKey={selectedId}
+        selectedRowKey={selected ? String(selected.historyId) : null}
       />
       {selected && (
         <InfoCard
           title="선택 이력 · 변경 전/후 및 사유"
           items={[
-            { label: '변경 항목', value: selected.changedField },
-            { label: '변경 전', value: selected.before },
-            { label: '변경 후', value: selected.after },
-            { label: '처리 사유', value: selected.reason },
+            { label: '변경 항목', value: detail?.changedField ?? '-' },
+            { label: '변경 전', value: detail?.before ?? '-' },
+            { label: '변경 후', value: detail?.after ?? '-' },
+            { label: '처리 사유', value: detail?.reason ?? '-' },
             {
               label: '처리일시',
               value: `${formatDateTimeText(selected.processedAt)} · ${selected.adminId}`,

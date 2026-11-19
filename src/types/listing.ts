@@ -2,9 +2,6 @@
 export type ListingApplicationStatus =
   'SUBMITTED' | 'UNDER_REVIEW' | 'REVISION_REQUESTED' | 'APPROVED' | 'REJECTED';
 
-// TODO(MOTU-22-1): 상품 화면이 카테고리 코드(GET /sectors)로 바뀌면 제거합니다.
-export type ListingCategory = 'SAAS' | 'CONTENTS' | 'COMMERCE' | 'HEALTHCARE' | 'ETC';
-
 export type ListingApplicant = {
   userId: number;
   loginId: string;
