@@ -13,13 +13,14 @@ import { TextArea } from '@/components/common/TextArea';
 import { AbnormalTradeStatusBadge } from '@/components/monitoring/AbnormalTradeStatusBadge';
 import { NoIssueConfirmModal } from '@/components/monitoring/NoIssueConfirmModal';
 import { ABNORMAL_TRADE_ACTION_OPTIONS, ABNORMAL_TRADE_TYPE_LABELS } from '@/constants/monitoring';
-import { getAbnormalTradeDetailPreview } from '@/constants/monitoringPreview';
 import { getMemberStatusPath, getProductTradingPath } from '@/constants/routes';
 import type { AbnormalTradeActionForm } from '@/schemas/monitoringSchema';
 import { abnormalTradeActionSchema } from '@/schemas/monitoringSchema';
 import type { MemberStatusLocationState } from '@/types/member';
 import type { AbnormalTradeStatus } from '@/types/monitoring';
 import type { ProductTradingLocationState } from '@/types/product';
+import { useAnomalyDetailQuery } from '@/queries/useAnomaliesQuery';
+import { getApiErrorMessage } from '@/utils/apiError';
 import { formatDateTimeText } from '@/utils/date';
 
 // ADM-MON-02 이상 거래 상세 (탐지 근거 확인과 관리자 조치)
@@ -42,9 +43,19 @@ export default function MonitoringDetailPage() {
     defaultValues: { action: 'PAUSE_PRODUCT', reason: '' },
   });
 
-  // TODO(MOTU-25-1): 이상 거래 상세 API 연동
-  const trade = getAbnormalTradeDetailPreview(alertId);
-  if (!trade) return <PlaceholderSection description="이상 거래 내역을 찾을 수 없습니다." />;
+  const { data: trade, isPending, isError, error } = useAnomalyDetailQuery(Number(alertId));
+  if (isError) return <PlaceholderSection description={getApiErrorMessage(error)} />;
+  if (isPending) {
+    return (
+      <PlaceholderSection
+        description={
+          Number(alertId) > 0
+            ? '이상 거래를 불러오는 중입니다.'
+            : '이상 거래 내역을 찾을 수 없습니다.'
+        }
+      />
+    );
+  }
 
   const status = processedStatus ?? trade.status;
 
@@ -56,7 +67,7 @@ export default function MonitoringDetailPage() {
     if (action === 'PAUSE_PRODUCT') {
       // 거래 중지 화면에서 확정·취소 후 이 상세로 돌아옵니다.
       const state: ProductTradingLocationState = { reason, returnTo: location.pathname };
-      void navigate(getProductTradingPath(trade.productId), { state });
+      if (trade.productId) void navigate(getProductTradingPath(trade.productId), { state });
       return;
     }
     // 회원 상태 변경 화면에서 정지를 선택해 두고, 처리·취소 후 이 상세로 돌아옵니다.
@@ -70,7 +81,7 @@ export default function MonitoringDetailPage() {
   // TODO(MOTU-25-1): 이상 없음 처리 API 연동 (처리완료로 변경, 관리자 활동 이력 기록)
   const handleConfirmNoIssue = () => {
     setNoIssueReason(null);
-    setProcessedStatus('DONE');
+    setProcessedStatus('RESOLVED');
   };
 
   return (
@@ -87,16 +98,19 @@ export default function MonitoringDetailPage() {
           items={[
             { label: '탐지 유형', value: ABNORMAL_TRADE_TYPE_LABELS[trade.type] },
             { label: '발생일시', value: formatDateTimeText(trade.detectedAt) },
-            { label: '상품', value: `${trade.productName} / ${trade.productId}` },
-            { label: '회원', value: `${trade.memberLoginId} / ${trade.memberId}` },
-            { label: '주문 ID', value: trade.orderId },
-            { label: '체결 ID', value: trade.tradeId },
+            {
+              label: '상품',
+              value: trade.productCode ? `${trade.productName ?? '-'} / ${trade.productCode}` : '-',
+            },
+            { label: '회원', value: `${trade.memberLoginId} / ${trade.memberCode}` },
+            { label: '주문 ID', value: trade.orderId ?? '-' },
+            { label: '체결 ID', value: trade.tradeId ?? '-' },
           ]}
         />
         <InfoCard title="탐지 근거" tone="danger" className="flex-1" items={trade.evidences} />
       </div>
 
-      {status === 'DONE' ? (
+      {status === 'RESOLVED' ? (
         <Notice tone="success">
           처리완료된 이상 거래입니다. 처리 기록은 관리자 활동 이력에서 확인합니다.
         </Notice>

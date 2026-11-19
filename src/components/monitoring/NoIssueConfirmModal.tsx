@@ -42,8 +42,11 @@ export function NoIssueConfirmModal({
     >
       <dl className="flex flex-col gap-3.5">
         <InfoRow label="조치 유형" value="이상 없음" />
-        <InfoRow label="대상 상품" value={`${trade.productName} / ${trade.productId}`} />
-        <InfoRow label="관련 회원" value={`${trade.memberLoginId} / ${trade.memberId}`} />
+        <InfoRow
+          label="대상 상품"
+          value={trade.productCode ? `${trade.productName ?? '-'} / ${trade.productCode}` : '-'}
+        />
+        <InfoRow label="관련 회원" value={`${trade.memberLoginId} / ${trade.memberCode}`} />
         <InfoRow label="조치 사유" value={reason} />
       </dl>
       <Notice>확인하면 처리완료로 바뀌고 관리자 활동 이력에 기록됩니다.</Notice>

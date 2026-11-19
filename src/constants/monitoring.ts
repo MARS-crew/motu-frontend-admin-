@@ -4,6 +4,7 @@ import type {
   AbnormalTradeAction,
   AbnormalTradeStatus,
   AbnormalTradeType,
+  AnomalyActionType,
   MonitoringPeriod,
 } from '@/types/monitoring';
 
@@ -17,16 +18,26 @@ export const ABNORMAL_TRADE_TYPE_LABELS: Record<AbnormalTradeType, string> = {
 };
 
 export const ABNORMAL_TRADE_STATUS_LABELS: Record<AbnormalTradeStatus, string> = {
-  UNPROCESSED: '미처리',
-  CHECKING: '확인중',
-  DONE: '처리완료',
+  PENDING: '미처리',
+  REVIEWING: '확인중',
+  RESOLVED: '처리완료',
 };
 
 export const ABNORMAL_TRADE_STATUS_TONES: Record<AbnormalTradeStatus, BadgeTone> = {
-  UNPROCESSED: 'danger',
-  CHECKING: 'neutral',
-  DONE: 'success',
+  PENDING: 'danger',
+  REVIEWING: 'neutral',
+  RESOLVED: 'success',
 };
+
+// 확인중·처리완료 이상 거래에 기록된 조치 이름
+export const ANOMALY_ACTION_LABELS: Record<AnomalyActionType, string> = {
+  STOCK_PAUSE: '상품 거래 중지',
+  USER_BLOCK: '회원 정지',
+  NO_ISSUE: '이상 없음',
+};
+
+// 이상 거래 목록 한 페이지 건수
+export const MONITORING_PAGE_SIZE = 20;
 
 export const ABNORMAL_TRADE_TYPE_FILTER_OPTIONS: SelectOption<AbnormalTradeType | 'ALL'>[] = [
   { value: 'ALL', label: '전체' },
