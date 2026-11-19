@@ -8,6 +8,7 @@ type NoticePublishConfirmModalProps = {
   rows: InfoItem[] | null;
   onClose: () => void;
   onConfirm: () => void;
+  isSubmitting?: boolean;
 };
 
 // ADM-NTC-03 공지 게시 확인 ([수정]은 작성 화면으로 돌아갑니다)
@@ -15,6 +16,7 @@ export function NoticePublishConfirmModal({
   rows,
   onClose,
   onConfirm,
+  isSubmitting = false,
 }: NoticePublishConfirmModalProps) {
   return (
     <Modal
@@ -26,7 +28,9 @@ export function NoticePublishConfirmModal({
           <Button variant="secondary" onClick={onClose}>
             수정
           </Button>
-          <Button onClick={onConfirm}>게시</Button>
+          <Button onClick={onConfirm} disabled={isSubmitting}>
+            게시
+          </Button>
         </>
       }
     >

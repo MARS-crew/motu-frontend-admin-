@@ -10,6 +10,8 @@ import { formatMonthDay } from '@/utils/date';
 
 type NoticeTableProps = {
   notices: NoticeSummary[];
+  // 조회 중·조회 실패 안내 (없으면 '조건에 맞는 공지가 없습니다.')
+  emptyMessage?: string;
 };
 
 // 09.03~09.10 (기간이 없으면 -)
@@ -19,7 +21,10 @@ const formatNoticePeriod = ({ startAt, endAt }: NoticeSummary) =>
     : '-';
 
 // ADM-NTC-01 공지 목록 (행을 누르면 공지 수정 화면으로 이동)
-export function NoticeTable({ notices }: NoticeTableProps) {
+export function NoticeTable({
+  notices,
+  emptyMessage = '조건에 맞는 공지가 없습니다.',
+}: NoticeTableProps) {
   const navigate = useNavigate();
 
   const columns: TableColumn<NoticeSummary>[] = [
@@ -28,7 +33,7 @@ export function NoticeTable({ notices }: NoticeTableProps) {
     {
       id: 'target',
       header: '게시 대상',
-      cell: (row) => row.productId ?? ALL_MEMBERS_TARGET_LABEL,
+      cell: (row) => row.productName ?? row.productCode ?? ALL_MEMBERS_TARGET_LABEL,
     },
     { id: 'status', header: '상태', cell: (row) => <NoticeStatusBadge status={row.status} /> },
     { id: 'period', header: '게시 기간', cell: formatNoticePeriod },
@@ -40,7 +45,7 @@ export function NoticeTable({ notices }: NoticeTableProps) {
       rows={notices}
       getRowKey={(row) => row.noticeId}
       gridClassName="grid-cols-[1fr_4fr_2fr_1.5fr_2fr]"
-      emptyMessage="조건에 맞는 공지가 없습니다."
+      emptyMessage={emptyMessage}
       onRowClick={(row) => void navigate(getNoticeEditPath(row.noticeId))}
     />
   );

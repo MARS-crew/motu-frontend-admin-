@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/common/Checkbox';
 import { Field } from '@/components/common/Field';
 import type { InfoItem } from '@/components/common/InfoCard';
 import { PlaceholderSection } from '@/components/common/PlaceholderSection';
-import type { SelectOption } from '@/components/common/Select';
+import { Notice } from '@/components/common/Notice';
 import { Select } from '@/components/common/Select';
 import { TextArea } from '@/components/common/TextArea';
 import { TextInput } from '@/components/common/TextInput';
@@ -19,71 +19,55 @@ import { NoticePreviewModal } from '@/components/notice/NoticePreviewModal';
 import { NoticePublishConfirmModal } from '@/components/notice/NoticePublishConfirmModal';
 import {
   ALL_MEMBERS_TARGET_LABEL,
-  MAX_IMPORTANT_NOTICES,
   NOTICE_TYPE_FULL_LABELS,
   NOTICE_TYPE_OPTIONS,
 } from '@/constants/notice';
-import { getNoticePreview, NOTICES_PREVIEW } from '@/constants/noticePreview';
-import { PRODUCTS_PREVIEW } from '@/constants/productPreview';
+import { NOTICE_PIN_LIMIT_EXCEEDED } from '@/constants/errorCodes';
 import { getNoticeDeletePath, ROUTES } from '@/constants/routes';
 import type { NoticeForm } from '@/schemas/noticeSchema';
 import { noticeFormSchema } from '@/schemas/noticeSchema';
+import {
+  useCreateNoticeMutation,
+  usePublishNoticeMutation,
+  useUpdateNoticeMutation,
+} from '@/queries/useNoticeMutations';
+import { useNoticeDetailQuery } from '@/queries/useNoticesQuery';
+import { useProductOptionsQuery } from '@/queries/useProductOptionsQuery';
 import type { NoticeType } from '@/types/notice';
+import { getApiError, getApiErrorMessage } from '@/utils/apiError';
+import { toAdminNoticeRequest } from '@/utils/notice';
 import { formatMonthDayTime } from '@/utils/date';
 
-// TODO(MOTU-26-1): 상장 상품 목록 API로 교체합니다.
-const PRODUCT_OPTIONS: SelectOption[] = PRODUCTS_PREVIEW.map((product) => ({
-  value: product.productId,
-  label: `${product.productName} / ${product.productId}`,
-}));
-
-const getProductLabel = (productId: string) =>
-  PRODUCT_OPTIONS.find((option) => option.value === productId)?.label ?? productId;
-
-const getProductName = (productId: string) =>
-  PRODUCTS_PREVIEW.find((product) => product.productId === productId)?.productName ?? null;
-
-// 09.03 20:30 ~ 09.10 23:59
+// 09.03 20:30 ~ 09.10 23:59 (종료일시가 없으면 시작일시만)
 const formatPeriod = (startAt: string, endAt: string) =>
-  `${formatMonthDayTime(startAt)} ~ ${formatMonthDayTime(endAt)}`;
-
-// TODO(MOTU-26-1): 중요 공지 개수 검사는 서버 응답으로 교체합니다.
-// 게시 중·게시 예약 중요 공지와 겹치는 구간을 훑어 동시에 몇 개가 되는지 셉니다.
-// 종료 시각과 다음 시작 시각이 같으면 겹치지 않습니다.
-const exceedsImportantLimit = (form: NoticeForm, noticeId: string | undefined) => {
-  if (!form.isImportant) return false;
-  const others = NOTICES_PREVIEW.filter(
-    (notice) =>
-      notice.noticeId !== noticeId &&
-      notice.isImportant &&
-      (notice.status === 'PUBLISHED' || notice.status === 'SCHEDULED') &&
-      notice.startAt !== null &&
-      notice.endAt !== null &&
-      notice.startAt < form.endAt &&
-      notice.endAt > form.startAt,
-  );
-  const points = [form.startAt, ...others.map((notice) => notice.startAt as string)];
-  return points.some((point) => {
-    const overlapping = others.filter(
-      (notice) => (notice.startAt as string) <= point && point < (notice.endAt as string),
-    );
-    return (
-      point >= form.startAt && point < form.endAt && overlapping.length >= MAX_IMPORTANT_NOTICES
-    );
-  });
-};
+  endAt
+    ? `${formatMonthDayTime(startAt)} ~ ${formatMonthDayTime(endAt)}`
+    : formatMonthDayTime(startAt);
 
 // ADM-NTC-02 공지 작성 및 수정 (공지 ID가 있으면 기존 공지 수정)
+// 같은 시간에 게시되는 중요 공지 수(최대 3개)는 서버가 검사하고, 넘으면 안내 모달을 띄웁니다.
 export default function NoticeFormPage() {
-  const { noticeId } = useParams();
+  const { noticeId: noticeIdParam } = useParams();
   const navigate = useNavigate();
-  const [confirmRows, setConfirmRows] = useState<InfoItem[] | null>(null);
+  const [confirmForm, setConfirmForm] = useState<NoticeForm | null>(null);
   const [preview, setPreview] = useState<NoticePreview | null>(null);
   const [limitPeriod, setLimitPeriod] = useState<string | null>(null);
 
-  // TODO(MOTU-26-1): 공지 상세 API 연동
-  const notice = noticeId ? getNoticePreview(noticeId) : null;
-  const isEdit = Boolean(noticeId);
+  const isEdit = Boolean(noticeIdParam);
+  const noticeId = Number(noticeIdParam);
+  const {
+    data: notice,
+    isPending: isLoading,
+    isError,
+    error: loadError,
+  } = useNoticeDetailQuery(noticeId);
+  const { data: productOptions = [] } = useProductOptionsQuery();
+
+  const createNotice = useCreateNoticeMutation();
+  const updateNotice = useUpdateNoticeMutation(noticeId);
+  const publishNotice = usePublishNoticeMutation(noticeId);
+  const saveError = createNotice.error ?? updateNotice.error ?? publishNotice.error;
+  const isSaving = createNotice.isPending || updateNotice.isPending || publishNotice.isPending;
 
   const {
     control,
@@ -95,7 +79,8 @@ export default function NoticeFormPage() {
     formState: { errors },
   } = useForm<NoticeForm>({
     resolver: zodResolver(noticeFormSchema),
-    defaultValues: {
+    // 수정 화면은 상세를 받아오면 현재 값으로 채웁니다. 이미 고친 값은 유지합니다.
+    values: {
       type: notice?.type ?? 'SERVICE',
       productId: notice?.productId ?? '',
       isImportant: notice?.isImportant ?? false,
@@ -104,12 +89,35 @@ export default function NoticeFormPage() {
       startAt: notice?.startAt ?? '',
       endAt: notice?.endAt ?? '',
     },
+    resetOptions: { keepDirtyValues: true },
   });
   const type = useWatch({ control, name: 'type' });
 
-  if (isEdit && (!notice || notice.status === 'DELETED')) {
-    return <PlaceholderSection description="공지를 찾을 수 없습니다." />;
+  if (isEdit) {
+    if (isError) return <PlaceholderSection description={getApiErrorMessage(loadError)} />;
+    if (isLoading) return <PlaceholderSection description="공지를 불러오는 중입니다." />;
+    if (notice.status === 'DELETED') {
+      return <PlaceholderSection description="삭제된 공지는 수정할 수 없습니다." />;
+    }
   }
+
+  const getProductLabel = (productId: string) =>
+    productOptions.find((option) => option.value === productId)?.label ?? productId;
+
+  const resetErrors = () => {
+    createNotice.reset();
+    updateNotice.reset();
+    publishNotice.reset();
+  };
+  const handleSaved = () => void navigate(ROUTES.NOTICES, { replace: true });
+  // 중요 공지 개수 초과는 안내 모달로, 그 밖의 실패는 버튼 위에 안내합니다.
+  const handlePublishError = (publishError: Error, form: NoticeForm) => {
+    setConfirmForm(null);
+    if (getApiError(publishError)?.code === NOTICE_PIN_LIMIT_EXCEEDED) {
+      resetErrors();
+      setLimitPeriod(formatPeriod(form.startAt, form.endAt));
+    }
+  };
 
   const handleChangeType = (nextType: NoticeType) => {
     setValue('type', nextType);
@@ -117,16 +125,20 @@ export default function NoticeFormPage() {
     if (nextType === 'SERVICE') setValue('productId', '', { shouldValidate: true });
   };
 
-  // 임시 저장은 제목만 있으면 됩니다.
-  // TODO(MOTU-26-1): 공지 임시 저장 API 연동
+  // 임시 저장은 제목만 있으면 됩니다. 기존 공지는 상태를 바꾸지 않고 내용만 저장합니다.
   const handleSaveDraft = async () => {
-    if (await trigger('title')) void navigate(ROUTES.NOTICES);
+    if (!(await trigger('title'))) return;
+    resetErrors();
+    const body = toAdminNoticeRequest(getValues());
+    if (isEdit) updateNotice.mutate(body, { onSuccess: handleSaved });
+    else createNotice.mutate({ ...body, status: 'DRAFT' }, { onSuccess: handleSaved });
   };
 
   const handleOpenPreview = () => {
     const form = getValues();
     setPreview({
-      productName: form.type === 'PRODUCT' ? getProductName(form.productId) : null,
+      productName:
+        form.type === 'PRODUCT' ? (getProductLabel(form.productId).split(' / ')[0] ?? null) : null,
       title: form.title.trim(),
       startAt: form.startAt,
       content: form.content,
@@ -134,28 +146,36 @@ export default function NoticeFormPage() {
   };
 
   const handleOpenConfirm = (form: NoticeForm) => {
-    const period = formatPeriod(form.startAt, form.endAt);
-    if (exceedsImportantLimit(form, noticeId)) {
-      setLimitPeriod(period);
-      return;
-    }
-    setConfirmRows([
-      { label: '공지 구분', value: NOTICE_TYPE_FULL_LABELS[form.type] },
-      { label: '제목', value: form.title.trim() },
-      {
-        label: '게시 대상',
-        value: form.type === 'PRODUCT' ? getProductLabel(form.productId) : ALL_MEMBERS_TARGET_LABEL,
-      },
-      { label: '게시 기간', value: period },
-      { label: '중요 공지', value: form.isImportant ? '예' : '아니오' },
-    ]);
+    resetErrors();
+    setConfirmForm(form);
   };
 
-  // TODO(MOTU-26-1): 공지 게시 API 연동 (시작일시가 미래이면 게시 예약으로 저장)
+  // 시작일시가 미래이면 게시 예약으로 저장됩니다.
   const handlePublish = () => {
-    setConfirmRows(null);
-    void navigate(ROUTES.NOTICES, { replace: true });
+    if (!confirmForm) return;
+    const form = confirmForm;
+    const body = toAdminNoticeRequest(form);
+    const options = {
+      onSuccess: handleSaved,
+      onError: (publishError: Error) => handlePublishError(publishError, form),
+    };
+    if (isEdit) publishNotice.mutate(body, options);
+    else createNotice.mutate({ ...body, status: 'POSTED' }, options);
   };
+
+  const confirmRows: InfoItem[] | null = confirmForm && [
+    { label: '공지 구분', value: NOTICE_TYPE_FULL_LABELS[confirmForm.type] },
+    { label: '제목', value: confirmForm.title.trim() },
+    {
+      label: '게시 대상',
+      value:
+        confirmForm.type === 'PRODUCT'
+          ? getProductLabel(confirmForm.productId)
+          : ALL_MEMBERS_TARGET_LABEL,
+    },
+    { label: '게시 기간', value: formatPeriod(confirmForm.startAt, confirmForm.endAt) },
+    { label: '중요 공지', value: confirmForm.isImportant ? '예' : '아니오' },
+  ];
 
   return (
     <form
@@ -190,7 +210,7 @@ export default function NoticeFormPage() {
             render={({ field }) => (
               <Select
                 id="productId"
-                options={PRODUCT_OPTIONS}
+                options={productOptions}
                 value={field.value}
                 onChange={field.onChange}
                 disabled={type === 'SERVICE'}
@@ -243,6 +263,8 @@ export default function NoticeFormPage() {
         </Field>
       </div>
 
+      {saveError && <Notice tone="danger">{getApiErrorMessage(saveError)}</Notice>}
+
       <div className="flex gap-2">
         {notice && (
           <Link
@@ -253,20 +275,23 @@ export default function NoticeFormPage() {
           </Link>
         )}
         <div className="flex-1" />
-        <Button variant="secondary" onClick={() => void handleSaveDraft()}>
+        <Button variant="secondary" disabled={isSaving} onClick={() => void handleSaveDraft()}>
           임시 저장
         </Button>
         <Button variant="secondary" onClick={handleOpenPreview}>
           미리보기
         </Button>
-        <Button type="submit">게시 확인</Button>
+        <Button type="submit" disabled={isSaving}>
+          게시 확인
+        </Button>
       </div>
 
       <NoticePreviewModal preview={preview} onClose={() => setPreview(null)} />
       <NoticePublishConfirmModal
         rows={confirmRows}
-        onClose={() => setConfirmRows(null)}
+        onClose={() => setConfirmForm(null)}
         onConfirm={handlePublish}
+        isSubmitting={isSaving}
       />
       <ImportantNoticeLimitModal period={limitPeriod} onClose={() => setLimitPeriod(null)} />
     </form>
