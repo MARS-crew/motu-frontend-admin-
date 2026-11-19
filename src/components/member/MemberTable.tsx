@@ -12,17 +12,27 @@ type MemberTableProps = {
   members: MemberSummary[];
   // 상세에서 [목록으로] 돌아올 때 검색 조건을 유지하도록 넘깁니다.
   listSearch: string;
+  // 조회 중·조회 실패 안내 (없으면 '조건에 맞는 회원이 없습니다.')
+  emptyMessage?: string;
 };
 
 // ADM-MBR-01 회원 목록 (아이디·닉네임·마스킹 이메일·가입일·상태·최근 접속)
-export function MemberTable({ members, listSearch }: MemberTableProps) {
+export function MemberTable({
+  members,
+  listSearch,
+  emptyMessage = '조건에 맞는 회원이 없습니다.',
+}: MemberTableProps) {
   const columns: TableColumn<MemberSummary>[] = [
     { id: 'loginId', header: '아이디', cell: (row) => row.loginId, isEmphasized: true },
     { id: 'nickname', header: '닉네임', cell: (row) => row.nickname },
     { id: 'email', header: '이메일', cell: (row) => row.maskedEmail },
     { id: 'joinedAt', header: '가입일', cell: (row) => formatShortDate(row.joinedAt) },
     { id: 'status', header: '상태', cell: (row) => <MemberStatusBadge status={row.status} /> },
-    { id: 'lastLoginAt', header: '최근 접속', cell: (row) => formatMonthDayTime(row.lastLoginAt) },
+    {
+      id: 'lastLoginAt',
+      header: '최근 접속',
+      cell: (row) => (row.lastLoginAt ? formatMonthDayTime(row.lastLoginAt) : '-'),
+    },
     {
       id: 'action',
       header: '상세',
@@ -44,7 +54,7 @@ export function MemberTable({ members, listSearch }: MemberTableProps) {
       rows={members}
       getRowKey={(row) => row.memberId}
       gridClassName="grid-cols-[2fr_1.5fr_2.5fr_1.5fr_1.2fr_1.8fr_1fr]"
-      emptyMessage="조건에 맞는 회원이 없습니다."
+      emptyMessage={emptyMessage}
     />
   );
 }

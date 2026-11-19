@@ -23,7 +23,7 @@ const isPositiveInteger = (value: string) => {
 export const createMemberStatusSchema = (currentStatus: MemberStatus) =>
   z.object({
     status: z
-      .enum(['ACTIVE', 'LOCKED', 'SUSPENDED'])
+      .enum(['ACTIVE', 'LOCKED', 'BLOCKED'])
       .refine((status) => status !== currentStatus, '변경하려는 상태와 현재 상태가 같습니다.'),
     reason: reasonSchema,
   });

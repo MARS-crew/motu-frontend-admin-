@@ -9,7 +9,7 @@ import { PageHeading } from '@/components/common/PageHeading';
 import { PlaceholderSection } from '@/components/common/PlaceholderSection';
 import { TextArea } from '@/components/common/TextArea';
 import { MEMBER_STATUS_LABELS } from '@/constants/member';
-import { getMemberDetailPreview } from '@/constants/memberPreview';
+import { useMemberDetailQuery } from '@/queries/useMembersQuery';
 import { getMemberDetailPath } from '@/constants/routes';
 import type { MemberUnlockForm } from '@/schemas/memberSchema';
 import { memberUnlockSchema } from '@/schemas/memberSchema';
@@ -20,8 +20,7 @@ export default function MemberUnlockPage() {
   const { memberId = '' } = useParams();
   const navigate = useNavigate();
 
-  // TODO(MOTU-27-1): 회원 상세 API 연동
-  const member = getMemberDetailPreview(memberId);
+  const { data: member } = useMemberDetailQuery(Number(memberId));
 
   const {
     register,
@@ -38,7 +37,7 @@ export default function MemberUnlockPage() {
         <PageHeading title="계정 잠금 해제" />
         <PlaceholderSection
           description={
-            member ? '잠금 상태인 회원만 해제할 수 있습니다.' : '회원을 찾을 수 없습니다.'
+            member ? '잠금 상태인 회원만 해제할 수 있습니다.' : '회원 정보를 불러오는 중입니다.'
           }
         />
       </div>
@@ -59,7 +58,10 @@ export default function MemberUnlockPage() {
           { label: '대상 회원', value: member.loginId },
           { label: '계정 상태', value: MEMBER_STATUS_LABELS[member.status] },
           { label: '잠금 사유', value: member.lockReason ?? '-' },
-          { label: '최근 접속', value: formatDateTimeText(member.lastLoginAt) },
+          {
+            label: '최근 접속',
+            value: member.lastLoginAt ? formatDateTimeText(member.lastLoginAt) : '-',
+          },
         ]}
       />
       <form

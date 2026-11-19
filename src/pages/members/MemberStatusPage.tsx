@@ -11,7 +11,7 @@ import { PageHeading } from '@/components/common/PageHeading';
 import { PlaceholderSection } from '@/components/common/PlaceholderSection';
 import { TextArea } from '@/components/common/TextArea';
 import { MEMBER_STATUS_LABELS } from '@/constants/member';
-import { getMemberDetailPreview } from '@/constants/memberPreview';
+import { useMemberDetailQuery } from '@/queries/useMembersQuery';
 import { getMemberDetailPath } from '@/constants/routes';
 import type { MemberStatusForm } from '@/schemas/memberSchema';
 import { createMemberStatusSchema } from '@/schemas/memberSchema';
@@ -25,8 +25,7 @@ export default function MemberStatusPage() {
   const navigate = useNavigate();
   const state = useLocation().state as MemberStatusLocationState;
 
-  // TODO(MOTU-27-1): 회원 상세 API 연동
-  const member = getMemberDetailPreview(memberId);
+  const { data: member } = useMemberDetailQuery(Number(memberId));
   const currentStatus = member?.status ?? 'ACTIVE';
   const schema = createMemberStatusSchema(currentStatus);
 
@@ -44,7 +43,7 @@ export default function MemberStatusPage() {
     return (
       <div className="flex flex-col gap-5">
         <PageHeading title="회원 상태 변경" />
-        <PlaceholderSection description="회원을 찾을 수 없습니다." />
+        <PlaceholderSection description="회원 정보를 불러오는 중입니다." />
       </div>
     );
   }

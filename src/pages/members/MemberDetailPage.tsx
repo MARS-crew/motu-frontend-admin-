@@ -6,9 +6,12 @@ import { Notice } from '@/components/common/Notice';
 import { PageHeading } from '@/components/common/PageHeading';
 import { PlaceholderSection } from '@/components/common/PlaceholderSection';
 import { MemberStatusBadge } from '@/components/member/MemberStatusBadge';
-import { getMemberDetailPreview } from '@/constants/memberPreview';
+import { ACTIVITY_ACTION_LABELS } from '@/constants/admin';
 import { getMemberPointsPath, getMemberStatusPath, getMemberUnlockPath } from '@/constants/routes';
 import { useMemberListPath } from '@/hooks/useMemberListPath';
+import { useRecentActivityLogQuery } from '@/queries/useActivityLogsQuery';
+import { useMemberDetailQuery } from '@/queries/useMembersQuery';
+import { getApiErrorMessage } from '@/utils/apiError';
 import { formatDateTimeText, formatSpacedDate } from '@/utils/date';
 import { formatNumber } from '@/utils/format';
 
@@ -17,8 +20,8 @@ export default function MemberDetailPage() {
   const { memberId = '' } = useParams();
   const listPath = useMemberListPath();
 
-  // TODO(MOTU-27-1): 회원 상세 API 연동
-  const member = getMemberDetailPreview(memberId);
+  const { data: member, isPending, isError, error } = useMemberDetailQuery(Number(memberId));
+  const { data: history } = useRecentActivityLogQuery('USER', Number(memberId));
 
   const listLink = (
     <Link to={listPath} className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
@@ -27,15 +30,18 @@ export default function MemberDetailPage() {
   );
 
   if (!member) {
+    const description = isError
+      ? getApiErrorMessage(error)
+      : isPending && Number(memberId) > 0
+        ? '회원 정보를 불러오는 중입니다.'
+        : '회원을 찾을 수 없습니다.';
     return (
       <div className="flex flex-col gap-5">
         <PageHeading title="회원 상세" action={listLink} />
-        <PlaceholderSection description="회원을 찾을 수 없습니다." />
+        <PlaceholderSection description={description} />
       </div>
     );
   }
-
-  const history = member.recentHistory;
 
   return (
     <div className="flex flex-col gap-5">
@@ -55,7 +61,7 @@ export default function MemberDetailPage() {
           items={[
             { label: '이메일 인증', value: member.isEmailVerified ? '인증 완료' : '미인증' },
             { label: '2차 보안', value: member.isTwoFactorEnabled ? '설정 완료' : '미설정' },
-            { label: '휴대폰', value: member.maskedPhone },
+            { label: '휴대폰', value: member.maskedPhone ?? '-' },
             {
               label: '최근 2차 인증',
               value: member.lastTwoFactorAt ? formatDateTimeText(member.lastTwoFactorAt) : '-',
@@ -68,7 +74,10 @@ export default function MemberDetailPage() {
             { label: '사용 가능 포인트', value: `${formatNumber(member.availablePoints)} P` },
             { label: '보유 상품', value: `${formatNumber(member.holdingProductCount)}종` },
             { label: '미체결 주문', value: `${formatNumber(member.openOrderCount)}건` },
-            { label: '최근 접속', value: formatDateTimeText(member.lastLoginAt) },
+            {
+              label: '최근 접속',
+              value: member.lastLoginAt ? formatDateTimeText(member.lastLoginAt) : '-',
+            },
           ]}
         />
       </div>
@@ -106,7 +115,7 @@ export default function MemberDetailPage() {
       <Notice>
         최근 처리 이력&nbsp;&nbsp;
         {history
-          ? `${formatDateTimeText(history.processedAt.slice(0, 10))} ${history.actionType} / 처리자 ${history.adminId} / 사유 ${history.reason}`
+          ? `${formatDateTimeText(history.createdAt.slice(0, 10))} ${ACTIVITY_ACTION_LABELS[history.action]} / 처리자 ${history.adminLoginId} / ${history.summary}`
           : '없음'}
       </Notice>
     </div>

@@ -5,13 +5,13 @@ import type { MemberStatus } from '@/types/member';
 export const MEMBER_STATUS_LABELS: Record<MemberStatus, string> = {
   ACTIVE: '정상',
   LOCKED: '잠금',
-  SUSPENDED: '정지',
+  BLOCKED: '정지',
 };
 
 export const MEMBER_STATUS_TONES: Record<MemberStatus, BadgeTone> = {
   ACTIVE: 'success',
   LOCKED: 'danger',
-  SUSPENDED: 'danger',
+  BLOCKED: 'danger',
 };
 
 export const MEMBER_STATUS_FILTER_OPTIONS: SelectOption<MemberStatus | 'ALL'>[] = [

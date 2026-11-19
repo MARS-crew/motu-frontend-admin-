@@ -8,7 +8,7 @@ import {
   postPublishAdminNotice,
 } from '@/apis/adminNotice';
 import { NOTICES_QUERY_KEY } from '@/queries/useNoticesQuery';
-import { ACTIVITY_LOGS_QUERY_KEY } from '@/queries/useProductHistoriesQuery';
+import { ACTIVITY_LOGS_QUERY_KEY } from '@/queries/useActivityLogsQuery';
 import type { AdminNoticeRequest, CreateAdminNoticeRequest } from '@/types/notice';
 
 // 공지를 바꾸면 공지 목록·상세와 관리자 활동 이력을 다시 불러옵니다.
