@@ -53,6 +53,7 @@ export type MemberStatusLocationState = {
   status?: MemberStatus;
   reason?: string;
   returnTo?: string;
+  anomalyId?: number;
 } | null;
 
 export type MemberPointsType = 'GRANT' | 'REVOKE';
@@ -94,4 +95,12 @@ export type AdminUsersParams = {
   status?: MemberStatus;
   page: number;
   size: number;
+};
+
+// PATCH /admin/users/{userId}/status
+export type ChangeUserStatusRequest = {
+  status: MemberStatus;
+  reason: string;
+  // 정지(BLOCKED)일 때만 보낼 수 있고, 그 이상 거래를 처리완료로 바꿉니다.
+  anomalyId?: number;
 };
