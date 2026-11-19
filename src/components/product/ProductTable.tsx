@@ -4,7 +4,6 @@ import { buttonClassName } from '@/components/common/buttonClassName';
 import type { TableColumn } from '@/components/common/Table';
 import { Table } from '@/components/common/Table';
 import { ProductTradeStatusBadge } from '@/components/product/ProductTradeStatusBadge';
-import { LISTING_CATEGORY_LABELS } from '@/constants/listing';
 import { getProductDetailPath } from '@/constants/routes';
 import type { ProductSummary } from '@/types/product';
 import { formatMonthDayTime } from '@/utils/date';
@@ -12,13 +11,18 @@ import { formatNumber } from '@/utils/format';
 
 type ProductTableProps = {
   products: ProductSummary[];
+  // 조회 중·조회 실패 안내 (없으면 '조건에 맞는 상장 상품이 없습니다.')
+  emptyMessage?: string;
 };
 
 // ADM-PRD-01 상장 상품 목록 (상품명·카테고리·상품 상태·거래 시작일시·현재가)
-export function ProductTable({ products }: ProductTableProps) {
+export function ProductTable({
+  products,
+  emptyMessage = '조건에 맞는 상장 상품이 없습니다.',
+}: ProductTableProps) {
   const columns: TableColumn<ProductSummary>[] = [
     { id: 'productName', header: '상품명', cell: (row) => row.productName, isEmphasized: true },
-    { id: 'category', header: '카테고리', cell: (row) => LISTING_CATEGORY_LABELS[row.category] },
+    { id: 'category', header: '카테고리', cell: (row) => row.sectorName },
     {
       id: 'tradeStatus',
       header: '상품 상태',
@@ -54,7 +58,7 @@ export function ProductTable({ products }: ProductTableProps) {
       rows={products}
       getRowKey={(row) => row.productId}
       gridClassName="grid-cols-[1.5fr_repeat(5,1fr)]"
-      emptyMessage="조건에 맞는 상장 상품이 없습니다."
+      emptyMessage={emptyMessage}
     />
   );
 }

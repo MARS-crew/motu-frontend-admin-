@@ -42,6 +42,7 @@ export type ActivityAction =
   | 'NOTICE_PUBLISH'
   | 'NOTICE_HIDE'
   | 'NOTICE_DELETE'
+  | 'NOTICE_UPDATE'
   | 'ANOMALY_ACTION';
 
 export type ActivityResult = 'SUCCESS' | 'FAILURE';
@@ -61,4 +62,40 @@ export type ActivityLog = {
   reason: string;
   // 마스킹된 접속 IP
   ipAddress: string;
+};
+
+// GET /admin/activity-logs 목록 항목
+export type AdminActivityLogItem = {
+  activityLogId: number;
+  // ISO 일시 (UTC)
+  createDate: string;
+  adminId: number;
+  adminLoginId: string;
+  targetType: ActivityTargetType;
+  targetId: number;
+  // 처리 당시 대상 이름 (상품명, 아이디, 공지 제목 등)
+  targetLabel: string;
+  action: ActivityAction;
+  result: ActivityResult;
+  summary: string;
+};
+
+// GET /admin/activity-logs/{activityLogId}
+export type AdminActivityLogResponse = AdminActivityLogItem & {
+  // { 항목: 값 }
+  before: Record<string, unknown> | null;
+  after: Record<string, unknown> | null;
+  reason: string;
+  ipAddress: string;
+};
+
+export type AdminActivityLogsParams = {
+  adminLoginId?: string;
+  targetType?: ActivityTargetType;
+  targetId?: number;
+  action?: ActivityAction;
+  from?: string;
+  to?: string;
+  page: number;
+  size: number;
 };

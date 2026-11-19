@@ -10,7 +10,7 @@ import { Notice } from '@/components/common/Notice';
 import { PlaceholderSection } from '@/components/common/PlaceholderSection';
 import { TextArea } from '@/components/common/TextArea';
 import { PRODUCT_TRADE_STATUS_LABELS, PRODUCT_TRADE_STATUS_TONES } from '@/constants/product';
-import { getProductDetailPreview } from '@/constants/productPreview';
+import { useProductDetailQuery } from '@/queries/useProductDetailQuery';
 import { getProductDetailPath } from '@/constants/routes';
 import type { ProductCloseForm } from '@/schemas/productSchema';
 import { productCloseSchema } from '@/schemas/productSchema';
@@ -21,8 +21,7 @@ export default function ProductClosePage() {
   const { productId = '' } = useParams();
   const navigate = useNavigate();
 
-  // TODO(MOTU-23-1): 상장 상품 상세 API 연동
-  const product = getProductDetailPreview(productId);
+  const { data: product } = useProductDetailQuery(Number(productId));
 
   const {
     control,
@@ -37,7 +36,7 @@ export default function ProductClosePage() {
   // 사용자 앱 미리보기에 안내문을 바로 반영합니다.
   const userNotice = useWatch({ control, name: 'userNotice' });
 
-  if (!product) return <PlaceholderSection description="상장 상품을 찾을 수 없습니다." />;
+  if (!product) return <PlaceholderSection description="상장 상품을 불러오는 중입니다." />;
   if (product.tradeStatus === 'CLOSED') {
     return <PlaceholderSection description="이미 거래가 종료된 상품입니다." />;
   }

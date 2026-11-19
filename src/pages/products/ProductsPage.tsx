@@ -1,32 +1,28 @@
+import { Pagination } from '@/components/common/Pagination';
 import { ProductFilterCard } from '@/components/product/ProductFilterCard';
 import { ProductTable } from '@/components/product/ProductTable';
-import { PRODUCTS_PREVIEW } from '@/constants/productPreview';
 import { useProductFilters } from '@/hooks/useProductFilters';
-import type { ProductFilters, ProductSummary } from '@/types/product';
+import { useProductsQuery } from '@/queries/useProductsQuery';
+import { getApiErrorMessage } from '@/utils/apiError';
 
-// TODO(MOTU-22-1): 서버 검색으로 교체합니다. 퍼블리싱 확인용으로 예시 데이터를 거릅니다.
-const filterPreview = (products: ProductSummary[], filters: ProductFilters) => {
-  const keyword = filters.keyword.trim().toLowerCase();
-  return products.filter(
-    (product) =>
-      (!keyword ||
-        product.productName.toLowerCase().includes(keyword) ||
-        product.productId.toLowerCase().includes(keyword)) &&
-      (filters.tradeStatus === 'ALL' || product.tradeStatus === filters.tradeStatus) &&
-      (filters.category === 'ALL' || product.category === filters.category) &&
-      (filters.exposure === 'ALL' || product.exposure === filters.exposure),
-  );
-};
-
-// ADM-PRD-01 상장 상품 목록 (상장 승인 전 신청은 상장 신청 목록에서 조회합니다)
+// ADM-PRD-01 상장 상품 목록 (최근 등록순, 한 페이지 20건)
+// 상장 승인 전 신청은 상장 신청 목록에서 조회합니다.
 export default function ProductsPage() {
-  const { filters, applyFilters } = useProductFilters();
-  const products = filterPreview(PRODUCTS_PREVIEW, filters);
+  const { filters, applyFilters, changePage } = useProductFilters();
+  const { data, isPending, isError, error } = useProductsQuery(filters);
+
+  const emptyMessage = isPending
+    ? '상장 상품을 불러오는 중입니다.'
+    : isError
+      ? getApiErrorMessage(error)
+      : undefined;
 
   return (
     <div className="flex flex-col gap-5">
+      {/* 쿼리가 바뀌면(목록 복귀 등) 입력값을 다시 맞춥니다. */}
       <ProductFilterCard key={JSON.stringify(filters)} filters={filters} onSearch={applyFilters} />
-      <ProductTable products={products} />
+      <ProductTable products={data?.products ?? []} emptyMessage={emptyMessage} />
+      <Pagination page={filters.page} totalPages={data?.totalPages ?? 1} onChange={changePage} />
     </div>
   );
 }

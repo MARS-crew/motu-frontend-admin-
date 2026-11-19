@@ -9,7 +9,7 @@ import { Notice } from '@/components/common/Notice';
 import { PlaceholderSection } from '@/components/common/PlaceholderSection';
 import { TextArea } from '@/components/common/TextArea';
 import { PRODUCT_TRADE_STATUS_LABELS } from '@/constants/product';
-import { getProductDetailPreview } from '@/constants/productPreview';
+import { useProductDetailQuery } from '@/queries/useProductDetailQuery';
 import { getProductDetailPath } from '@/constants/routes';
 import type { ProductPauseForm, ProductResumeForm } from '@/schemas/productSchema';
 import { productPauseSchema, productResumeSchema } from '@/schemas/productSchema';
@@ -107,9 +107,8 @@ export default function ProductTradingPage() {
   const location = useLocation();
   const state = location.state as ProductTradingLocationState;
 
-  // TODO(MOTU-23-1): 상장 상품 상세 API 연동
-  const product = getProductDetailPreview(productId);
-  if (!product) return <PlaceholderSection description="상장 상품을 찾을 수 없습니다." />;
+  const { data: product } = useProductDetailQuery(Number(productId));
+  if (!product) return <PlaceholderSection description="상장 상품을 불러오는 중입니다." />;
 
   const handleDone = () =>
     void navigate(state?.returnTo ?? getProductDetailPath(product.productId), { replace: true });

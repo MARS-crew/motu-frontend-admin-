@@ -42,3 +42,17 @@ export const PRODUCT_DETAIL_TABS: { value: ProductDetailTab; label: string }[] =
 ];
 
 export const NOT_REGISTERED_LABEL = '미등록';
+
+// 상장 상품 목록 한 페이지 건수
+export const PRODUCT_PAGE_SIZE = 20;
+
+// 변경 이력 탭에 보여주는 최근 이력 건수
+export const PRODUCT_HISTORY_SIZE = 20;
+
+// 상세 거래 정보의 거래 상태 설명
+export const PRODUCT_TRADE_STATUS_DESCRIPTIONS: Record<ProductTradeStatus, string> = {
+  PENDING: '거래 시작 전',
+  ACTIVE: '24시간 거래 진행 중',
+  PAUSED: '신규 주문·체결 중지',
+  CLOSED: '신규 거래 종료',
+};

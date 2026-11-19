@@ -10,8 +10,9 @@ import {
 } from '@/components/product/ProductDetailCards';
 import { ProductTitle } from '@/components/product/ProductTitle';
 import { PRODUCT_DETAIL_TABS } from '@/constants/product';
-import { getProductDetailPreview } from '@/constants/productPreview';
+import { useProductDetailQuery } from '@/queries/useProductDetailQuery';
 import type { ProductDetailTab } from '@/types/product';
+import { getApiErrorMessage } from '@/utils/apiError';
 
 const isProductDetailTab = (value: string | null): value is ProductDetailTab =>
   PRODUCT_DETAIL_TABS.some((tab) => tab.value === value);
@@ -26,14 +27,23 @@ export default function ProductDetailPage() {
   const handleChangeTab = (value: ProductDetailTab) =>
     setSearchParams({ tab: value }, { replace: true });
 
-  // TODO(MOTU-22-1): 상장 상품 상세 API 연동
-  const product = getProductDetailPreview(productId);
-  if (!product) return <PlaceholderSection description="상장 상품을 찾을 수 없습니다." />;
+  const { data: product, isPending, isError, error } = useProductDetailQuery(Number(productId));
+
+  if (isError) return <PlaceholderSection description={getApiErrorMessage(error)} />;
+  if (isPending) {
+    return (
+      <PlaceholderSection
+        description={
+          Number(productId) > 0 ? '상장 상품을 불러오는 중입니다.' : '상장 상품을 찾을 수 없습니다.'
+        }
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-5">
       <ProductTitle
-        productId={product.productId}
+        productCode={product.productCode}
         productName={product.productName}
         tradeStatus={product.tradeStatus}
       />

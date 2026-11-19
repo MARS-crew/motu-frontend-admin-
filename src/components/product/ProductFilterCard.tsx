@@ -5,23 +5,28 @@ import { Button } from '@/components/common/Button';
 import { Field } from '@/components/common/Field';
 import { Select } from '@/components/common/Select';
 import { TextInput } from '@/components/common/TextInput';
-import { LISTING_CATEGORY_FILTER_OPTIONS } from '@/constants/listing';
 import {
   PRODUCT_EXPOSURE_FILTER_OPTIONS,
   PRODUCT_TRADE_STATUS_FILTER_OPTIONS,
 } from '@/constants/product';
+import { useSectorsQuery } from '@/queries/useSectorsQuery';
 import type { ProductFilters } from '@/types/product';
+import { toSectorFilterOptions } from '@/utils/sector';
+
+type ProductSearchFilters = Omit<ProductFilters, 'page'>;
 
 type ProductFilterCardProps = {
-  filters: ProductFilters;
-  onSearch: (filters: ProductFilters) => void;
+  filters: ProductSearchFilters;
+  onSearch: (filters: ProductSearchFilters) => void;
 };
 
 // ADM-PRD-01 검색 조건 (상품명·상품 ID, 상품 상태, 카테고리, 노출 상태)
 export function ProductFilterCard({ filters, onSearch }: ProductFilterCardProps) {
   const [draft, setDraft] = useState(filters);
+  const { data: sectors } = useSectorsQuery();
 
-  const updateDraft = (next: Partial<ProductFilters>) => setDraft((prev) => ({ ...prev, ...next }));
+  const updateDraft = (next: Partial<ProductSearchFilters>) =>
+    setDraft((prev) => ({ ...prev, ...next }));
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -52,9 +57,9 @@ export function ProductFilterCard({ filters, onSearch }: ProductFilterCardProps)
       <Field label="카테고리" htmlFor="filter-category" className="flex-1">
         <Select
           id="filter-category"
-          options={LISTING_CATEGORY_FILTER_OPTIONS}
-          value={draft.category}
-          onChange={(category) => updateDraft({ category })}
+          options={toSectorFilterOptions(sectors)}
+          value={draft.sectorCode}
+          onChange={(sectorCode) => updateDraft({ sectorCode })}
         />
       </Field>
       <Field label="노출 상태" htmlFor="filter-exposure" className="flex-1">
