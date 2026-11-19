@@ -97,3 +97,6 @@ export const ACTIVITY_RESULT_TONES: Record<ActivityResult, BadgeTone> = {
   SUCCESS: 'success',
   FAILURE: 'danger',
 };
+
+// 관리자 활동 이력 한 페이지 건수
+export const ACTIVITY_LOG_PAGE_SIZE = 20;
