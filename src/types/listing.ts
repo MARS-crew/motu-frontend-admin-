@@ -2,17 +2,8 @@
 export type ListingApplicationStatus =
   'SUBMITTED' | 'UNDER_REVIEW' | 'REVISION_REQUESTED' | 'APPROVED' | 'REJECTED';
 
+// TODO(MOTU-22-1): 상품 화면이 카테고리 코드(GET /sectors)로 바뀌면 제거합니다.
 export type ListingCategory = 'SAAS' | 'CONTENTS' | 'COMMERCE' | 'HEALTHCARE' | 'ETC';
-
-export type ListingApplicationSummary = {
-  applicationId: string;
-  productName: string;
-  applicantName: string;
-  category: ListingCategory;
-  // YYYY-MM-DD
-  appliedAt: string;
-  status: ListingApplicationStatus;
-};
 
 export type ListingApplicant = {
   userId: number;
@@ -60,49 +51,140 @@ export type ListingApplicationFilters = {
   page: number;
 };
 
+export type ListingAttachment = {
+  // UUID
+  id: string;
+  kind: 'FILE' | 'LINK';
+  originalName?: string | null;
+  contentType?: string | null;
+  // byte
+  size?: number | null;
+  // 외부 링크 주소 (LINK)
+  url?: string | null;
+  saved: boolean;
+  downloadPath: string | null;
+};
+
+export type ListingAttachmentCollection = {
+  id: string;
+  purpose: 'EVIDENCE' | 'LOGO' | 'MAIN_IMAGE';
+  description: string | null;
+  attachments: ListingAttachment[];
+};
+
+export type ListingRevision = {
+  id: number;
+  requestContent: string;
+  deadline: string;
+  createDate: string;
+  resubmittedAt: string | null;
+  evidence: ListingAttachmentCollection | null;
+};
+
+// 신청서 입력값입니다. 숫자도 입력한 문자열 그대로 내려옵니다.
+export type ListingDraftData = {
+  serviceName?: string | null;
+  summary?: string | null;
+  description?: string | null;
+  officialUrl?: string | null;
+  operatorName?: string | null;
+  managerName?: string | null;
+  businessEmail?: string | null;
+  contactPhone?: string | null;
+  desiredPrice?: string | null;
+  totalIssuedQuantity?: string | null;
+  minOrderQuantity?: string | null;
+  tickSize?: string | null;
+  priceCalculationBasis?: string | null;
+  desiredListingDate?: string | null;
+  mau?: string | null;
+  mauSource?: string | null;
+  mauReferenceMonth?: string | null;
+  dau?: string | null;
+  dauSource?: string | null;
+  dauReferenceDate?: string | null;
+  revenue?: string | null;
+  revenueStartDate?: string | null;
+  revenueEndDate?: string | null;
+  revenueSource?: string | null;
+  revenueExtractDate?: string | null;
+  transactionVolume?: string | null;
+  // LAST_12_MONTHS: 최근 완료 12개월 / SINCE_LAUNCH: 운영 전체 기간
+  transactionVolumeBasis?: string | null;
+  metricsStartDate?: string | null;
+  metricsEndDate?: string | null;
+  transactionVolumeSource?: string | null;
+  transactionVolumeExtractDate?: string | null;
+  evidenceDescription?: string | null;
+  sectorCode?: number | null;
+};
+
+// GET /admin/listing-applications/{id}
+export type ListingApplicationResponse = ListingApplicationItem & {
+  reviewComment: string | null;
+  revisionDeadline: string | null;
+  data: ListingDraftData;
+  attachments: {
+    logo: ListingAttachmentCollection | null;
+    mainImage: ListingAttachmentCollection | null;
+    evidence: ListingAttachmentCollection | null;
+  };
+  revisions: ListingRevision[];
+};
+
 export type ListingDetailTab = 'basic' | 'trading' | 'metrics' | 'evidence';
 
-// 값이 없으면 null → 화면에 '미제출'로 표시합니다.
-export type ListingApplicationDetail = ListingApplicationSummary & {
-  // 상품 요약
-  categoryDetail: string;
-  operatorName: string;
-  officialUrl: string;
-  // 신청 기본 정보
-  oneLineIntro: string;
+// 첨부 파일·외부 링크 (증빙 자료, 대표 이미지)
+export type ListingEvidenceFile = {
+  attachmentId: string;
+  kind: 'FILE' | 'LINK';
+  // 파일명 또는 링크 주소
+  fileName: string;
   description: string;
-  imageFileName: string;
-  managerName: string;
-  managerEmail: string;
-  managerPhone: string;
+  contentType: string | null;
+  // 2.4MB (링크는 '-')
+  sizeLabel: string;
+  // 외부 링크 주소 (LINK)
+  url: string | null;
+};
+
+// 상세 화면 표시용으로 정리한 상장 신청입니다. 값이 없으면 null → 화면에 '미제출'로 표시합니다.
+export type ListingApplicationDetail = {
+  id: number;
+  applicationNumber: string;
+  applicantName: string;
+  status: ListingApplicationStatus;
+  // 상품 요약
+  serviceName: string | null;
+  sectorName: string | null;
+  operatorName: string | null;
+  officialUrl: string | null;
+  mainImage: ListingEvidenceFile | null;
+  // 신청 기본 정보
+  summary: string | null;
+  description: string | null;
+  managerName: string | null;
+  managerEmail: string | null;
+  managerPhone: string | null;
   // 평가·거래 정보
-  desiredPrice: number;
-  totalSupply: number;
-  minOrderQuantity: number;
-  tickSize: number;
-  priceBasis: string;
-  // 서비스 지표
+  desiredPrice: number | null;
+  totalSupply: number | null;
+  minOrderQuantity: number | null;
+  tickSize: number | null;
+  priceBasis: string | null;
+  // 서비스 지표 (표시 문구)
   metrics: {
-    mau: number | null;
-    dau: number | null;
+    mau: string | null;
+    dau: string | null;
     annualRevenue: string | null;
     revenuePeriod: string | null;
     revenueSource: string | null;
+    transactionLabel: string;
     transactionAmount: string | null;
     transactionPeriod: string | null;
     transactionSource: string | null;
   };
   evidences: ListingEvidenceFile[];
-};
-
-export type ListingEvidenceFile = {
-  fileId: string;
-  fileName: string;
-  description: string;
-  // 2.4MB
-  sizeLabel: string;
-  // TODO(MOTU-21-1): 미리보기 URL 로 교체합니다. 퍼블리싱 확인용 본문입니다.
-  previewText: string | null;
 };
 
 // approve: 승인 / revision: 보완 요청 / reject: 반려

@@ -17,8 +17,8 @@ import {
   LISTING_REVIEW_TEXTS,
   LISTING_REVISION_ITEM_OPTIONS,
 } from '@/constants/listing';
-import { getListingDetailPreview } from '@/constants/listingPreview';
 import { useListingListPath } from '@/hooks/useListingListPath';
+import { useListingApplicationQuery } from '@/queries/useListingApplicationQuery';
 import type { ListingReviewForm } from '@/schemas/listingReviewSchema';
 import { listingReviewSchema } from '@/schemas/listingReviewSchema';
 import type { ListingReviewResult } from '@/types/listing';
@@ -31,8 +31,7 @@ export default function ListingReviewPage() {
   const { listPath } = useListingListPath();
   const [confirmForm, setConfirmForm] = useState<ListingReviewForm | null>(null);
 
-  // TODO(MOTU-21-1): 상장 신청 상세 API 연동
-  const application = getListingDetailPreview(applicationId);
+  const { data: application } = useListingApplicationQuery(Number(applicationId));
 
   const {
     control,
@@ -43,24 +42,26 @@ export default function ListingReviewPage() {
     formState: { errors },
   } = useForm<ListingReviewForm>({
     resolver: zodResolver(listingReviewSchema),
-    defaultValues: {
+    // 상세를 받아오면 승인 기본값(희망 상장가·발행량)을 채웁니다. 이미 고친 값은 유지합니다.
+    values: {
       result: 'approve',
       // 승인은 신청값(희망 상장가·발행량)으로 시작하고 필요하면 조정합니다.
-      finalPrice: application ? String(application.desiredPrice) : '',
-      totalSupply: application ? String(application.totalSupply) : '',
+      finalPrice: application?.desiredPrice?.toString() ?? '',
+      totalSupply: application?.totalSupply?.toString() ?? '',
       listingDate: '',
       tradeStartAt: '',
       reason: '',
       revisionItem: '',
       revisionRequest: '',
     },
+    resetOptions: { keepDirtyValues: true },
   });
   const result = useWatch({ control, name: 'result' });
 
-  if (!application) return <PlaceholderSection description="상장 신청을 찾을 수 없습니다." />;
+  if (!application) return <PlaceholderSection description="상장 신청을 불러오는 중입니다." />;
 
   const texts = LISTING_REVIEW_TEXTS[result];
-  const appliedSummary = `희망 상장가 ${formatNumber(application.desiredPrice)}P / 신청 발행량 ${formatNumber(application.totalSupply)}주`;
+  const appliedSummary = `희망 상장가 ${formatNumber(application.desiredPrice ?? 0)}P / 신청 발행량 ${formatNumber(application.totalSupply ?? 0)}주`;
 
   const handleChangeResult = (value: ListingReviewResult) => {
     setValue('result', value);
@@ -69,7 +70,7 @@ export default function ListingReviewPage() {
   // 처리 전 확인 모달을 띄웁니다.
   const handleOpenConfirm = (form: ListingReviewForm) => setConfirmForm(form);
   const handleCloseConfirm = () => setConfirmForm(null);
-  // TODO(MOTU-21-1): 심사 결과 처리 API 연동 (승인 시 최종 상장가·발행량·상장일·거래 시작일시 확정)
+  // TODO(MOTU-21-1): 심사 결과 처리 API 연동 (백엔드 PR #90 머지 후) (승인 시 최종 상장가·발행량·상장일·거래 시작일시 확정)
   const handleConfirm = () => {
     setConfirmForm(null);
     void navigate(listPath, { replace: true });

@@ -5,7 +5,7 @@ import { ModalTextBody } from '@/components/listing/ModalTextBody';
 type PriceBasisModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  applicationId: string;
+  applicationNumber: string;
   productName: string;
   priceBasis: string;
 };
@@ -14,7 +14,7 @@ type PriceBasisModalProps = {
 export function PriceBasisModal({
   isOpen,
   onClose,
-  applicationId,
+  applicationNumber,
   productName,
   priceBasis,
 }: PriceBasisModalProps) {
@@ -23,7 +23,7 @@ export function PriceBasisModal({
       isOpen={isOpen}
       onClose={onClose}
       title="가격 근거 · 제출 원문"
-      description={`${applicationId} · ${productName} · 읽기 전용`}
+      description={`${applicationNumber} · ${productName} · 읽기 전용`}
       actions={
         <Button variant="secondary" onClick={onClose}>
           닫기

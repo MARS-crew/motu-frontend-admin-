@@ -16,10 +16,11 @@ import {
   LISTING_DETAIL_TABS,
   REVIEWED_LISTING_STATUSES,
 } from '@/constants/listing';
-import { getListingDetailPreview } from '@/constants/listingPreview';
 import { getListingReviewPath } from '@/constants/routes';
 import { useListingListPath } from '@/hooks/useListingListPath';
+import { useListingApplicationQuery } from '@/queries/useListingApplicationQuery';
 import type { ListingDetailTab } from '@/types/listing';
+import { getApiErrorMessage } from '@/utils/apiError';
 
 const isListingDetailTab = (value: string | null): value is ListingDetailTab =>
   LISTING_DETAIL_TABS.some((tab) => tab.value === value);
@@ -29,6 +30,12 @@ export default function ListingDetailPage() {
   const { applicationId = '' } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { listPath, locationState } = useListingListPath();
+  const {
+    data: application,
+    isPending,
+    isError,
+    error,
+  } = useListingApplicationQuery(Number(applicationId));
 
   const tabParam = searchParams.get('tab');
   const tab = isListingDetailTab(tabParam) ? tabParam : DEFAULT_LISTING_DETAIL_TAB;
@@ -36,16 +43,25 @@ export default function ListingDetailPage() {
   const handleChangeTab = (value: ListingDetailTab) =>
     setSearchParams({ tab: value }, { replace: true, state: locationState });
 
-  // TODO(MOTU-21-1): 상장 신청 상세 API 연동
-  const application = getListingDetailPreview(applicationId);
-  if (!application) return <PlaceholderSection description="상장 신청을 찾을 수 없습니다." />;
+  if (isError) return <PlaceholderSection description={getApiErrorMessage(error)} />;
+  if (isPending) {
+    return (
+      <PlaceholderSection
+        description={
+          Number(applicationId) > 0
+            ? '상장 신청을 불러오는 중입니다.'
+            : '상장 신청을 찾을 수 없습니다.'
+        }
+      />
+    );
+  }
 
   const canReview = !REVIEWED_LISTING_STATUSES.includes(application.status);
 
   return (
     <div className="flex flex-col gap-5">
       <ListingDetailHeader
-        applicationId={application.applicationId}
+        applicationNumber={application.applicationNumber}
         applicantName={application.applicantName}
         status={application.status}
         listPath={listPath}
@@ -86,7 +102,7 @@ export default function ListingDetailPage() {
       {canReview && (
         <div className="flex justify-end">
           <Link
-            to={getListingReviewPath(application.applicationId)}
+            to={getListingReviewPath(String(application.id))}
             state={locationState}
             className={buttonClassName()}
           >
