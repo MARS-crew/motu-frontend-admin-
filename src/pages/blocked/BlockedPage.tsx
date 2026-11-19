@@ -1,10 +1,9 @@
-import { useLocation, useNavigate } from 'react-router';
+import { Navigate, useLocation, useNavigate } from 'react-router';
 
 import { AuthCard } from '@/components/auth/AuthCard';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
 import { Notice } from '@/components/common/Notice';
-import { BLOCKED_ADMIN_ACCOUNT_PREVIEW } from '@/constants/authPreview';
 import { ROUTES } from '@/constants/routes';
 import type { BlockedAdminAccount, BlockedAdminStatus } from '@/types/auth';
 
@@ -23,18 +22,24 @@ const REASON_LABELS: Record<BlockedAdminStatus, string> = {
 export default function BlockedPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  // TODO(MOTU-18-1): 로그인 API 연동 후 예시 데이터 대신 전달받은 계정 상태만 사용합니다.
-  const account = (location.state as BlockedAdminAccount | null) ?? BLOCKED_ADMIN_ACCOUNT_PREVIEW;
+  const account = location.state as BlockedAdminAccount | null;
+
+  // 로그인 화면을 거치지 않고 들어오면 보여줄 계정 상태가 없으므로 로그인으로 보냅니다.
+  if (!account) return <Navigate to={ROUTES.LOGIN} replace />;
 
   const handleBackToLogin = () => void navigate(ROUTES.LOGIN, { replace: true });
 
   return (
     <AuthCard title={TITLES[account.status]} badge={<Badge tone="danger">접근 차단</Badge>}>
       <Notice tone="danger" className="w-full">
-        <p>
-          {REASON_LABELS[account.status]}: {account.reason}
-        </p>
-        <p>처리일: {account.processedAt}</p>
+        {account.reason ? (
+          <p>
+            {REASON_LABELS[account.status]}: {account.reason}
+          </p>
+        ) : (
+          <p>관리자 메뉴를 사용할 수 없습니다. 다른 관리자에게 계정 상태를 확인해 주세요.</p>
+        )}
+        {account.processedAt && <p>처리일: {account.processedAt}</p>}
       </Notice>
       <div className="flex w-full justify-end">
         <Button variant="secondary" onClick={handleBackToLogin}>
