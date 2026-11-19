@@ -125,4 +125,34 @@ export type ProductFilters = {
 export type ProductTradingLocationState = {
   reason?: string;
   returnTo?: string;
+  anomalyId?: number;
 } | null;
+
+// PATCH /admin/stocks/{stockId} (null 이면 값을 지웁니다)
+export type UpdateAdminStockRequest = {
+  name: string;
+  sectorCode: number;
+  isPublic: boolean;
+  description: string | null;
+  officialUrl: string | null;
+  mau: number | null;
+  transactionVolume: number | null;
+  // YYYY-MM-DD
+  metricsBaseDate: string | null;
+  reason: string;
+};
+
+// POST /admin/stocks/{stockId}/pause
+export type PauseAdminStockRequest = {
+  reason: string;
+  // 사용자 안내문 (선택)
+  notice?: string;
+  // 이상 거래 상세에서 중지하면 그 이상 거래를 처리완료로 바꿉니다.
+  anomalyId?: number;
+};
+
+// POST /admin/stocks/{stockId}/close
+export type CloseAdminStockRequest = {
+  reason: string;
+  notice: string;
+};
