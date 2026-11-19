@@ -14,7 +14,7 @@ import { parseISODate, toISODate } from '@/utils/date';
 
 type NoticeFilterCardProps = {
   filters: NoticeFilters;
-  onChange: (next: Partial<NoticeFilters>) => void;
+  onChange: (next: Partial<Omit<NoticeFilters, 'page'>>) => void;
 };
 
 // ADM-NTC-01 조회 조건 (선택하면 바로 목록에 반영, 검색어는 Enter·포커스 이동 시 반영)

@@ -8,18 +8,29 @@ import { InfoCard } from '@/components/common/InfoCard';
 import { PlaceholderSection } from '@/components/common/PlaceholderSection';
 import { TextArea } from '@/components/common/TextArea';
 import { NOTICE_STATUS_LABELS } from '@/constants/notice';
-import { getNoticePreview } from '@/constants/noticePreview';
 import { getNoticeEditPath, ROUTES } from '@/constants/routes';
 import type { NoticeHideForm } from '@/schemas/noticeSchema';
 import { noticeHideSchema } from '@/schemas/noticeSchema';
+import { useDeleteNoticeMutation, useHideNoticeMutation } from '@/queries/useNoticeMutations';
+import { useNoticeDetailQuery } from '@/queries/useNoticesQuery';
+import { getApiErrorMessage } from '@/utils/apiError';
+import { Notice } from '@/components/common/Notice';
 
 // ADM-NTC-04 공지 비공개·삭제 확인 (공지 수정 화면의 [비공개 / 삭제]로 진입)
 export default function NoticeDeletePage() {
   const { noticeId = '' } = useParams();
   const navigate = useNavigate();
 
-  // TODO(MOTU-26-1): 공지 상세 API 연동
-  const notice = getNoticePreview(noticeId);
+  const {
+    data: notice,
+    isPending,
+    isError,
+    error: loadError,
+  } = useNoticeDetailQuery(Number(noticeId));
+  const hideNotice = useHideNoticeMutation(Number(noticeId));
+  const deleteNotice = useDeleteNoticeMutation(Number(noticeId));
+  const processError = hideNotice.error ?? deleteNotice.error;
+  const isProcessing = hideNotice.isPending || deleteNotice.isPending;
 
   const {
     register,
@@ -30,20 +41,32 @@ export default function NoticeDeletePage() {
     defaultValues: { reason: '' },
   });
 
-  if (!notice || notice.status === 'DELETED') {
-    return <PlaceholderSection description="공지를 찾을 수 없습니다." />;
+  if (isError) return <PlaceholderSection description={getApiErrorMessage(loadError)} />;
+  if (isPending) return <PlaceholderSection description="공지를 불러오는 중입니다." />;
+  if (notice.status === 'DELETED') {
+    return <PlaceholderSection description="이미 삭제된 공지입니다." />;
   }
+  // 임시 저장 공지는 비공개 없이 삭제만 할 수 있습니다.
+  const canHide = notice.status !== 'HIDDEN' && notice.status !== 'DRAFT';
 
   // 취소하면 기존 게시 상태를 유지하고 수정 화면으로 돌아갑니다.
   const handleCancel = () => void navigate(getNoticeEditPath(notice.noticeId));
-  // TODO(MOTU-26-1): 공지 비공개·삭제 API 연동 (처리 결과와 처리자는 관리자 활동 이력에 저장)
-  const handleProcess = () => void navigate(ROUTES.NOTICES, { replace: true });
+  // 처리 결과와 처리자는 서버가 관리자 활동 이력에 저장합니다.
+  const handleDone = () => void navigate(ROUTES.NOTICES, { replace: true });
+  const handleHide = (form: NoticeHideForm) => {
+    deleteNotice.reset();
+    hideNotice.mutate(form.reason.trim(), { onSuccess: handleDone });
+  };
+  const handleDelete = (form: NoticeHideForm) => {
+    hideNotice.reset();
+    deleteNotice.mutate(form.reason.trim(), { onSuccess: handleDone });
+  };
 
   return (
     <div className="flex flex-col gap-5">
       <InfoCard
         items={[
-          { label: '대상 공지', value: notice.noticeId },
+          { label: '대상 공지', value: `${notice.noticeId} · ${notice.title}` },
           { label: '현재 상태', value: NOTICE_STATUS_LABELS[notice.status] },
         ]}
       />
@@ -73,16 +96,25 @@ export default function NoticeDeletePage() {
         <Field label="처리 사유 *" htmlFor="reason" errorMessage={errors.reason?.message}>
           <TextArea id="reason" hasError={Boolean(errors.reason)} {...register('reason')} />
         </Field>
+        {processError && <Notice tone="danger">{getApiErrorMessage(processError)}</Notice>}
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={handleCancel}>
             취소
           </Button>
-          {notice.status !== 'PRIVATE' && (
-            <Button variant="secondary" onClick={() => void handleSubmit(handleProcess)()}>
+          {canHide && (
+            <Button
+              variant="secondary"
+              disabled={isProcessing}
+              onClick={() => void handleSubmit(handleHide)()}
+            >
               비공개
             </Button>
           )}
-          <Button variant="danger" onClick={() => void handleSubmit(handleProcess)()}>
+          <Button
+            variant="danger"
+            disabled={isProcessing}
+            onClick={() => void handleSubmit(handleDelete)()}
+          >
             삭제
           </Button>
         </div>
