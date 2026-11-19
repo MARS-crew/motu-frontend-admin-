@@ -8,6 +8,8 @@ import type { ListingEvidenceFile } from '@/types/listing';
 type EvidencePreviewModalProps = {
   file: ListingEvidenceFile | null;
   applicationId: number;
+  // 팝업 상단에 파일명과 함께 표시하는 신청번호
+  applicationNumber: string;
   onClose: () => void;
   onDownload: (file: ListingEvidenceFile) => void;
 };
@@ -23,6 +25,7 @@ const isPreviewable = (file: ListingEvidenceFile) =>
 export function EvidencePreviewModal({
   file,
   applicationId,
+  applicationNumber,
   onClose,
   onDownload,
 }: EvidencePreviewModalProps) {
@@ -54,9 +57,7 @@ export function EvidencePreviewModal({
       isOpen={Boolean(file)}
       onClose={onClose}
       title="증빙 자료 미리보기"
-      description={
-        file && [file.fileName, file.description, file.sizeLabel].filter(Boolean).join(' · ')
-      }
+      description={file && `${file.fileName} · 신청번호 ${applicationNumber}`}
       actions={
         <>
           <Button variant="secondary" onClick={() => file && onDownload(file)}>

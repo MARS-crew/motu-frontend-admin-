@@ -48,7 +48,7 @@ export function ListingFilterCard({ filters, onSearch }: ListingFilterCardProps)
       <Field label="신청자" htmlFor="filter-applicant" className="flex-1">
         <TextInput
           id="filter-applicant"
-          placeholder="닉네임·아이디"
+          placeholder="이름·아이디"
           value={draft.applicant}
           onChange={(event) => updateDraft({ applicant: event.target.value })}
         />

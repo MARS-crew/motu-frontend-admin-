@@ -234,6 +234,7 @@ export function ListingEvidenceCard({ application }: ListingCardProps) {
         file={previewFile}
         onClose={() => setPreviewFile(null)}
         applicationId={application.id}
+        applicationNumber={application.applicationNumber}
         onDownload={(file) => void handleDownload(file)}
       />
     </section>

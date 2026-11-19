@@ -66,8 +66,15 @@ const joinSource = (source?: string | null, date?: string | null) => {
 };
 
 // 지표 값 + 기준 시점: 120,000명 (2026-08 기준)
-const withReference = (value: string | null, reference?: string | null) =>
-  value && reference ? `${value} (${formatDateTimeText(reference)} 기준)` : value;
+// 지표 값 + 기준 시점·출처: 120,000명 (2026.08 기준 · GA4)
+const withReference = (value: string | null, reference?: string | null, source?: string | null) => {
+  if (!value) return value;
+  const notes = [
+    reference ? `${formatDateTimeText(reference)} 기준` : null,
+    textOrNull(source),
+  ].filter(Boolean);
+  return notes.length > 0 ? `${value} (${notes.join(' · ')})` : value;
+};
 
 const toEvidenceFile = (
   attachment: ListingAttachment,
@@ -120,8 +127,8 @@ export const toListingApplicationDetail = (
     tickSize: toNumber(data.tickSize),
     priceBasis: textOrNull(data.priceCalculationBasis),
     metrics: {
-      mau: withReference(formatAmount(data.mau, '명'), data.mauReferenceMonth),
-      dau: withReference(formatAmount(data.dau, '명'), data.dauReferenceDate),
+      mau: withReference(formatAmount(data.mau, '명'), data.mauReferenceMonth, data.mauSource),
+      dau: withReference(formatAmount(data.dau, '명'), data.dauReferenceDate, data.dauSource),
       annualRevenue: formatAmount(data.revenue, '원'),
       revenuePeriod: formatPeriod(data.revenueStartDate, data.revenueEndDate),
       revenueSource: joinSource(data.revenueSource, data.revenueExtractDate),
