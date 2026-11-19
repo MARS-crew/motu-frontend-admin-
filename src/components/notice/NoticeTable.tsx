@@ -33,7 +33,8 @@ export function NoticeTable({
     {
       id: 'target',
       header: '게시 대상',
-      cell: (row) => row.productName ?? row.productCode ?? ALL_MEMBERS_TARGET_LABEL,
+      // 상품별 공지는 상품 ID(PRD-018)로 표시합니다.
+      cell: (row) => row.productCode ?? ALL_MEMBERS_TARGET_LABEL,
     },
     { id: 'status', header: '상태', cell: (row) => <NoticeStatusBadge status={row.status} /> },
     { id: 'period', header: '게시 기간', cell: formatNoticePeriod },

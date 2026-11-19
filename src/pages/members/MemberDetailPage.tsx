@@ -115,7 +115,7 @@ export default function MemberDetailPage() {
       <Notice>
         최근 처리 이력&nbsp;&nbsp;
         {history
-          ? `${formatDateTimeText(history.createdAt.slice(0, 10))} ${ACTIVITY_ACTION_LABELS[history.action]} / 처리자 ${history.adminLoginId} / ${history.summary}`
+          ? `${formatDateTimeText(history.createdAt.slice(0, 10))} ${ACTIVITY_ACTION_LABELS[history.action]} / 처리자 ${history.adminLoginId} / 사유 ${history.reason || '-'}`
           : '없음'}
       </Notice>
     </div>
