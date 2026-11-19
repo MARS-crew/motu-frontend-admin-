@@ -4,7 +4,7 @@ import { getActivityLog, getActivityLogs } from '@/apis/activityLog';
 import { PRODUCT_HISTORY_SIZE } from '@/constants/product';
 import { toProductHistory, toProductHistoryDetail } from '@/utils/product';
 
-const ACTIVITY_LOGS_QUERY_KEY = ['admin', 'activity-logs'];
+export const ACTIVITY_LOGS_QUERY_KEY = ['admin', 'activity-logs'];
 
 // 상품 변경 이력 = 이 상품을 대상으로 한 관리자 활동 이력 (최신순)
 export const useProductHistoriesQuery = (stockId: number) =>

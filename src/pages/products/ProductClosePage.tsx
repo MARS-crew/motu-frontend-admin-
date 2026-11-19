@@ -11,9 +11,11 @@ import { PlaceholderSection } from '@/components/common/PlaceholderSection';
 import { TextArea } from '@/components/common/TextArea';
 import { PRODUCT_TRADE_STATUS_LABELS, PRODUCT_TRADE_STATUS_TONES } from '@/constants/product';
 import { useProductDetailQuery } from '@/queries/useProductDetailQuery';
+import { useCloseProductMutation } from '@/queries/useProductStatusMutations';
 import { getProductDetailPath } from '@/constants/routes';
 import type { ProductCloseForm } from '@/schemas/productSchema';
 import { productCloseSchema } from '@/schemas/productSchema';
+import { getApiErrorMessage } from '@/utils/apiError';
 import { formatNumber } from '@/utils/format';
 
 // ADM-PRD-05 상품 종료 확인 (종료 후 다시 거래할 수 없음)
@@ -22,6 +24,7 @@ export default function ProductClosePage() {
   const navigate = useNavigate();
 
   const { data: product } = useProductDetailQuery(Number(productId));
+  const { mutate: closeProduct, isPending, error } = useCloseProductMutation(Number(productId));
 
   const {
     control,
@@ -43,8 +46,12 @@ export default function ProductClosePage() {
 
   const detailPath = getProductDetailPath(product.productId);
   const handleCancel = () => void navigate(detailPath);
-  // TODO(MOTU-23-1): 상품 종료 API 연동 (처리 결과와 처리자는 관리자 활동 이력에 저장)
-  const handleClose = () => void navigate(detailPath, { replace: true });
+  // 처리 결과와 처리자는 서버가 관리자 활동 이력에 저장합니다.
+  const handleClose = (form: ProductCloseForm) =>
+    closeProduct(
+      { reason: form.reason.trim(), notice: form.userNotice.trim() },
+      { onSuccess: () => void navigate(detailPath, { replace: true }) },
+    );
 
   return (
     <div className="flex items-start gap-5">
@@ -93,11 +100,12 @@ export default function ProductClosePage() {
           {...register('isConfirmed')}
         />
 
+        {error && <Notice tone="danger">{getApiErrorMessage(error)}</Notice>}
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={handleCancel}>
             취소
           </Button>
-          <Button type="submit" variant="danger" disabled={!isValid}>
+          <Button type="submit" variant="danger" disabled={!isValid || isPending}>
             상품 종료
           </Button>
         </div>

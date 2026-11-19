@@ -15,11 +15,13 @@ import { TextInput } from '@/components/common/TextInput';
 import { ProductEditConfirmModal } from '@/components/product/ProductEditConfirmModal';
 import { PRODUCT_EXPOSURE_LABELS } from '@/constants/product';
 import { useProductDetailQuery } from '@/queries/useProductDetailQuery';
+import { useUpdateProductMutation } from '@/queries/useProductStatusMutations';
 import { useSectorsQuery } from '@/queries/useSectorsQuery';
 import { getProductDetailPath } from '@/constants/routes';
 import type { ProductEditForm } from '@/schemas/productSchema';
 import { productEditSchema } from '@/schemas/productSchema';
-import type { ProductExposure } from '@/types/product';
+import type { ProductExposure, UpdateAdminStockRequest } from '@/types/product';
+import { getApiErrorMessage } from '@/utils/apiError';
 import { formatDateTimeText } from '@/utils/date';
 import { formatNumber } from '@/utils/format';
 
@@ -31,6 +33,21 @@ const EXPOSURE_OPTIONS: SelectOption<ProductExposure>[] = [
 const CURRENT_IMAGE_LABEL = '현재 등록 이미지';
 
 const toNumberText = (value: number | null) => (value === null ? '' : formatNumber(value));
+const toNumberOrNull = (value: string) => (value.trim() ? Number(value.replaceAll(',', '')) : null);
+
+// 수정 폼 → 상품 수정 API 요청 (비운 값은 null 로 보내 지웁니다)
+const toUpdateRequest = (form: ProductEditForm): UpdateAdminStockRequest => ({
+  name: form.productName.trim(),
+  sectorCode: Number(form.category),
+  isPublic: form.exposure === 'PUBLIC',
+  description: form.intro.trim() || null,
+  officialUrl: form.officialUrl.trim() || null,
+  mau: toNumberOrNull(form.mau),
+  transactionVolume: toNumberOrNull(form.transactionAmount),
+  metricsBaseDate: form.metricsBaseDate || null,
+  reason: form.reason.trim(),
+});
+
 const normalizeNumber = (value: string) =>
   value.trim() ? formatNumber(Number(value.replaceAll(',', ''))) : '-';
 
@@ -79,6 +96,13 @@ export default function ProductEditPage() {
   const navigate = useNavigate();
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [confirmRows, setConfirmRows] = useState<InfoItem[] | null>(null);
+  const [pendingForm, setPendingForm] = useState<ProductEditForm | null>(null);
+  const {
+    mutate: updateProduct,
+    isPending: isSaving,
+    error: saveError,
+    reset: resetSave,
+  } = useUpdateProductMutation(Number(productId));
 
   const { data: product } = useProductDetailQuery(Number(productId));
   const { data: sectors = [] } = useSectorsQuery();
@@ -118,18 +142,24 @@ export default function ProductEditPage() {
   const detailPath = getProductDetailPath(product.productId);
 
   const handleSelectImage = () => imageInputRef.current?.click();
-  // TODO(MOTU-23-1): 대표 이미지 업로드 API 연동 (지금은 선택한 파일명만 표시)
+  // TODO(MOTU-23-1): 대표 이미지 업로드 API 가 없어 선택한 파일명만 표시하고 저장하지 않습니다.
   const handleChangeImage = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) setValue('imageFileName', file.name, { shouldDirty: true });
   };
   const handleCancel = () => void navigate(detailPath);
-  const handleOpenConfirm = (form: ProductEditForm) =>
+  const handleOpenConfirm = (form: ProductEditForm) => {
+    resetSave();
+    setPendingForm(form);
     setConfirmRows(getChangedRows(defaultValues, form, sectorOptions));
-  // TODO(MOTU-23-1): 상품 정보 수정 API 연동 (변경 전·후 값과 사유는 관리자 활동 이력에 저장)
+  };
+  const handleCloseConfirm = () => setConfirmRows(null);
+  // 변경 전·후 값과 사유는 서버가 관리자 활동 이력에 저장합니다.
   const handleSave = () => {
-    setConfirmRows(null);
-    void navigate(detailPath, { replace: true });
+    if (!pendingForm) return;
+    updateProduct(toUpdateRequest(pendingForm), {
+      onSuccess: () => void navigate(detailPath, { replace: true }),
+    });
   };
 
   return (
@@ -258,8 +288,10 @@ export default function ProductEditPage() {
 
       <ProductEditConfirmModal
         rows={confirmRows}
-        onClose={() => setConfirmRows(null)}
+        onClose={handleCloseConfirm}
         onConfirm={handleSave}
+        isSubmitting={isSaving}
+        errorMessage={saveError ? getApiErrorMessage(saveError) : undefined}
       />
     </form>
   );

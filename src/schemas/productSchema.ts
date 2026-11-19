@@ -21,7 +21,10 @@ export const productEditSchema = z
     officialUrl: z
       .string()
       .trim()
-      .refine((value) => !value || URL.canParse(value), 'URL 형식이 올바르지 않습니다.'),
+      .refine(
+        (value) => !value || (URL.canParse(value) && value.startsWith('https://')),
+        '공식 URL은 https로 시작하는 주소로 입력해 주세요.',
+      ),
     imageFileName: z.string(),
     mau: optionalNumberText('MAU'),
     transactionAmount: optionalNumberText('거래액'),

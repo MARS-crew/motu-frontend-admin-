@@ -9,6 +9,9 @@ type ProductEditConfirmModalProps = {
   rows: InfoItem[] | null;
   onClose: () => void;
   onConfirm: () => void;
+  isSubmitting?: boolean;
+  // 저장 실패 안내 (모달을 닫지 않고 보여줍니다)
+  errorMessage?: string;
 };
 
 // ADM-PRD-03 변경 내용 확인 모달 (변경 전·후 값을 확인한 뒤 저장)
@@ -16,6 +19,8 @@ export function ProductEditConfirmModal({
   rows,
   onClose,
   onConfirm,
+  isSubmitting = false,
+  errorMessage,
 }: ProductEditConfirmModalProps) {
   return (
     <Modal
@@ -31,7 +36,9 @@ export function ProductEditConfirmModal({
           <Button variant="secondary" onClick={onClose}>
             취소
           </Button>
-          <Button onClick={onConfirm}>변경 저장</Button>
+          <Button onClick={onConfirm} disabled={isSubmitting}>
+            변경 저장
+          </Button>
         </>
       }
     >
@@ -40,7 +47,11 @@ export function ProductEditConfirmModal({
           <InfoRow key={row.label} label={row.label} value={row.value} />
         ))}
       </dl>
-      <Notice>변경 전·후 값과 사유는 관리자 활동 이력에 저장됩니다.</Notice>
+      {errorMessage ? (
+        <Notice tone="danger">{errorMessage}</Notice>
+      ) : (
+        <Notice>변경 전·후 값과 사유는 관리자 활동 이력에 저장됩니다.</Notice>
+      )}
     </Modal>
   );
 }

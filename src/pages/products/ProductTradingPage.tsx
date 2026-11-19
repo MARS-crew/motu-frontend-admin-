@@ -10,20 +10,28 @@ import { PlaceholderSection } from '@/components/common/PlaceholderSection';
 import { TextArea } from '@/components/common/TextArea';
 import { PRODUCT_TRADE_STATUS_LABELS } from '@/constants/product';
 import { useProductDetailQuery } from '@/queries/useProductDetailQuery';
+import {
+  usePauseProductMutation,
+  useResumeProductMutation,
+} from '@/queries/useProductStatusMutations';
 import { getProductDetailPath } from '@/constants/routes';
 import type { ProductPauseForm, ProductResumeForm } from '@/schemas/productSchema';
 import { productPauseSchema, productResumeSchema } from '@/schemas/productSchema';
 import type { ProductDetail, ProductTradingLocationState } from '@/types/product';
+import { getApiErrorMessage } from '@/utils/apiError';
 import { formatNumber } from '@/utils/format';
 
 type TradingCardProps = {
   product: ProductDetail;
   defaultReason: string;
+  // 이상 거래 상세에서 진입한 경우 (중지하면 그 이상 거래를 처리완료로 바꿉니다)
+  anomalyId?: number;
   onDone: () => void;
 };
 
 // 거래 중지: 미체결 주문 취소, 예약 포인트·수량 해제 후 신규 주문·체결 차단
-function PauseCard({ product, defaultReason, onDone }: TradingCardProps) {
+function PauseCard({ product, defaultReason, anomalyId, onDone }: TradingCardProps) {
+  const { mutate: pause, isPending, error } = usePauseProductMutation(Number(product.productId));
   const {
     register,
     handleSubmit,
@@ -33,8 +41,11 @@ function PauseCard({ product, defaultReason, onDone }: TradingCardProps) {
     defaultValues: { reason: defaultReason, userNotice: '' },
   });
 
-  // TODO(MOTU-23-1): 거래 중지 API 연동
-  const handlePause = () => onDone();
+  const handlePause = (form: ProductPauseForm) =>
+    pause(
+      { reason: form.reason.trim(), notice: form.userNotice.trim() || undefined, anomalyId },
+      { onSuccess: onDone },
+    );
 
   return (
     <form noValidate onSubmit={handleSubmit(handlePause)} className="w-1/2">
@@ -56,7 +67,8 @@ function PauseCard({ product, defaultReason, onDone }: TradingCardProps) {
           <p>미체결 주문 {formatNumber(product.openOrderCount)}건 취소</p>
           <p>예약 포인트·수량 해제</p>
         </Notice>
-        <Button type="submit" variant="danger" className="w-full">
+        {error && <Notice tone="danger">{getApiErrorMessage(error)}</Notice>}
+        <Button type="submit" variant="danger" disabled={isPending} className="w-full">
           거래 중지
         </Button>
       </InfoCard>
@@ -66,6 +78,7 @@ function PauseCard({ product, defaultReason, onDone }: TradingCardProps) {
 
 // 거래 재개: 재개 시점부터 주문과 거래를 다시 허용
 function ResumeCard({ product, defaultReason, onDone }: TradingCardProps) {
+  const { mutate: resume, isPending, error } = useResumeProductMutation(Number(product.productId));
   const {
     register,
     handleSubmit,
@@ -75,8 +88,8 @@ function ResumeCard({ product, defaultReason, onDone }: TradingCardProps) {
     defaultValues: { reason: defaultReason },
   });
 
-  // TODO(MOTU-23-1): 거래 재개 API 연동
-  const handleResume = () => onDone();
+  const handleResume = (form: ProductResumeForm) =>
+    resume(form.reason.trim(), { onSuccess: onDone });
 
   return (
     <form noValidate onSubmit={handleSubmit(handleResume)} className="w-1/2">
@@ -92,7 +105,8 @@ function ResumeCard({ product, defaultReason, onDone }: TradingCardProps) {
           <TextArea id="resumeReason" hasError={Boolean(errors.reason)} {...register('reason')} />
         </Field>
         <Notice tone="success">재개 시점부터 24시간 거래를 다시 허용합니다.</Notice>
-        <Button type="submit" className="w-full">
+        {error && <Notice tone="danger">{getApiErrorMessage(error)}</Notice>}
+        <Button type="submit" disabled={isPending} className="w-full">
           거래 재개
         </Button>
       </InfoCard>
@@ -115,7 +129,14 @@ export default function ProductTradingPage() {
   const defaultReason = state?.reason ?? '';
 
   if (product.tradeStatus === 'ACTIVE') {
-    return <PauseCard product={product} defaultReason={defaultReason} onDone={handleDone} />;
+    return (
+      <PauseCard
+        product={product}
+        defaultReason={defaultReason}
+        anomalyId={state?.anomalyId}
+        onDone={handleDone}
+      />
+    );
   }
   if (product.tradeStatus === 'PAUSED') {
     return <ResumeCard product={product} defaultReason={defaultReason} onDone={handleDone} />;
