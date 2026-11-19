@@ -11,7 +11,10 @@ import { PageHeading } from '@/components/common/PageHeading';
 import { PlaceholderSection } from '@/components/common/PlaceholderSection';
 import { TextArea } from '@/components/common/TextArea';
 import { MEMBER_STATUS_LABELS } from '@/constants/member';
+import { useChangeMemberStatusMutation } from '@/queries/useMemberMutations';
 import { useMemberDetailQuery } from '@/queries/useMembersQuery';
+import { getApiErrorMessage } from '@/utils/apiError';
+import { Notice } from '@/components/common/Notice';
 import { getMemberDetailPath } from '@/constants/routes';
 import type { MemberStatusForm } from '@/schemas/memberSchema';
 import { createMemberStatusSchema } from '@/schemas/memberSchema';
@@ -26,6 +29,11 @@ export default function MemberStatusPage() {
   const state = useLocation().state as MemberStatusLocationState;
 
   const { data: member } = useMemberDetailQuery(Number(memberId));
+  const {
+    mutate: changeStatus,
+    isPending,
+    error,
+  } = useChangeMemberStatusMutation(Number(memberId));
   const currentStatus = member?.status ?? 'ACTIVE';
   const schema = createMemberStatusSchema(currentStatus);
 
@@ -36,7 +44,9 @@ export default function MemberStatusPage() {
     formState: { errors },
   } = useForm<MemberStatusForm>({
     resolver: zodResolver(schema),
-    defaultValues: { status: state?.status ?? currentStatus, reason: state?.reason ?? '' },
+    // 회원 정보를 받아오면 현재 상태(또는 이상 거래 상세에서 넘긴 상태)로 채웁니다.
+    values: { status: state?.status ?? currentStatus, reason: state?.reason ?? '' },
+    resetOptions: { keepDirtyValues: true },
   });
 
   if (!member) {
@@ -51,8 +61,17 @@ export default function MemberStatusPage() {
   // 기본은 회원 상세로, 이상 거래 상세에서 들어왔으면 그 화면으로 돌아갑니다.
   const returnPath = state?.returnTo ?? getMemberDetailPath(member.memberId);
   const handleCancel = () => void navigate(returnPath);
-  // TODO(MOTU-28-1): 회원 상태 변경 API 연동 (변경 전·후 상태, 사유, 처리자·시각 저장)
-  const handleChangeStatus = () => void navigate(returnPath, { replace: true });
+  // 변경 전·후 상태, 사유, 처리자·시각은 서버가 활동 이력에 저장합니다.
+  // 이상 거래 상세에서 정지로 들어온 경우 그 이상 거래도 함께 처리완료됩니다.
+  const handleChangeStatus = (form: MemberStatusForm) =>
+    changeStatus(
+      {
+        status: form.status,
+        reason: form.reason.trim(),
+        anomalyId: form.status === 'BLOCKED' ? state?.anomalyId : undefined,
+      },
+      { onSuccess: () => void navigate(returnPath, { replace: true }) },
+    );
 
   return (
     <div className="flex flex-col gap-5">
@@ -102,11 +121,14 @@ export default function MemberStatusPage() {
             {...register('reason')}
           />
         </Field>
+        {error && <Notice tone="danger">{getApiErrorMessage(error)}</Notice>}
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={handleCancel}>
             취소
           </Button>
-          <Button type="submit">상태 변경</Button>
+          <Button type="submit" disabled={isPending}>
+            상태 변경
+          </Button>
         </div>
       </form>
     </div>

@@ -9,7 +9,10 @@ import { PageHeading } from '@/components/common/PageHeading';
 import { PlaceholderSection } from '@/components/common/PlaceholderSection';
 import { TextArea } from '@/components/common/TextArea';
 import { MEMBER_STATUS_LABELS } from '@/constants/member';
+import { useUnlockMemberMutation } from '@/queries/useMemberMutations';
 import { useMemberDetailQuery } from '@/queries/useMembersQuery';
+import { getApiErrorMessage } from '@/utils/apiError';
+import { Notice } from '@/components/common/Notice';
 import { getMemberDetailPath } from '@/constants/routes';
 import type { MemberUnlockForm } from '@/schemas/memberSchema';
 import { memberUnlockSchema } from '@/schemas/memberSchema';
@@ -21,6 +24,7 @@ export default function MemberUnlockPage() {
   const navigate = useNavigate();
 
   const { data: member } = useMemberDetailQuery(Number(memberId));
+  const { mutate: unlock, isPending, error } = useUnlockMemberMutation(Number(memberId));
 
   const {
     register,
@@ -47,8 +51,9 @@ export default function MemberUnlockPage() {
   const detailPath = getMemberDetailPath(member.memberId);
   // 취소하면 잠금 상태를 유지하고 회원 상세로 돌아갑니다.
   const handleCancel = () => void navigate(detailPath);
-  // TODO(MOTU-28-1): 잠금 해제 API 연동 (로그인 실패 횟수 0회 초기화, 변경 전·후 상태·사유·처리자 저장)
-  const handleUnlock = () => void navigate(detailPath, { replace: true });
+  // 로그인 실패 횟수를 0회로 초기화하고, 변경 전·후 상태·사유·처리자는 서버가 활동 이력에 저장합니다.
+  const handleUnlock = (form: MemberUnlockForm) =>
+    unlock(form.reason.trim(), { onSuccess: () => void navigate(detailPath, { replace: true }) });
 
   return (
     <div className="flex flex-col gap-5">
@@ -77,11 +82,14 @@ export default function MemberUnlockPage() {
             {...register('reason')}
           />
         </Field>
+        {error && <Notice tone="danger">{getApiErrorMessage(error)}</Notice>}
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={handleCancel}>
             취소
           </Button>
-          <Button type="submit">잠금 해제</Button>
+          <Button type="submit" disabled={isPending}>
+            잠금 해제
+          </Button>
         </div>
       </form>
     </div>
