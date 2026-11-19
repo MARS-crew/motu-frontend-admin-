@@ -61,7 +61,7 @@ export default function MonitoringDetailPage() {
     }
     // 회원 상태 변경 화면에서 정지를 선택해 두고, 처리·취소 후 이 상세로 돌아옵니다.
     const state: MemberStatusLocationState = {
-      status: 'SUSPENDED',
+      status: 'BLOCKED',
       reason,
       returnTo: location.pathname,
     };

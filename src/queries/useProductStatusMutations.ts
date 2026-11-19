@@ -6,7 +6,7 @@ import {
   postPauseAdminStock,
   postResumeAdminStock,
 } from '@/apis/adminStock';
-import { ACTIVITY_LOGS_QUERY_KEY } from '@/queries/useProductHistoriesQuery';
+import { ACTIVITY_LOGS_QUERY_KEY } from '@/queries/useActivityLogsQuery';
 import { PRODUCTS_QUERY_KEY } from '@/queries/useProductsQuery';
 import type {
   CloseAdminStockRequest,
