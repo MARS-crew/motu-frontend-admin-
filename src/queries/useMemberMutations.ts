@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { patchAdminAccountCash } from '@/apis/adminAccount';
 import { patchAdminUserStatus, postUnlockAdminUser } from '@/apis/adminUser';
 import { ACTIVITY_LOGS_QUERY_KEY } from '@/queries/useActivityLogsQuery';
+import { ANOMALIES_QUERY_KEY } from '@/queries/useAnomaliesQuery';
 import { MEMBERS_QUERY_KEY } from '@/queries/useMembersQuery';
 import type { ChangeUserStatusRequest } from '@/types/member';
 
@@ -13,6 +14,8 @@ export const useInvalidateMember = () => {
     Promise.all([
       queryClient.invalidateQueries({ queryKey: MEMBERS_QUERY_KEY }),
       queryClient.invalidateQueries({ queryKey: ACTIVITY_LOGS_QUERY_KEY }),
+      // 이상 거래 상세에서 넘어온 조치는 그 이상 거래도 처리완료로 바뀝니다.
+      queryClient.invalidateQueries({ queryKey: ANOMALIES_QUERY_KEY }),
     ]);
 };
 

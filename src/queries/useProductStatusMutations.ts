@@ -7,6 +7,7 @@ import {
   postResumeAdminStock,
 } from '@/apis/adminStock';
 import { ACTIVITY_LOGS_QUERY_KEY } from '@/queries/useActivityLogsQuery';
+import { ANOMALIES_QUERY_KEY } from '@/queries/useAnomaliesQuery';
 import { PRODUCTS_QUERY_KEY } from '@/queries/useProductsQuery';
 import type {
   CloseAdminStockRequest,
@@ -21,6 +22,8 @@ const useInvalidateProduct = () => {
     Promise.all([
       queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY }),
       queryClient.invalidateQueries({ queryKey: ACTIVITY_LOGS_QUERY_KEY }),
+      // 이상 거래 상세에서 넘어온 조치는 그 이상 거래도 처리완료로 바뀝니다.
+      queryClient.invalidateQueries({ queryKey: ANOMALIES_QUERY_KEY }),
     ]);
 };
 
