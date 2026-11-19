@@ -13,7 +13,7 @@ import type { MonitoringFilters } from '@/types/monitoring';
 
 type MonitoringFilterCardProps = {
   filters: MonitoringFilters;
-  onChange: (next: Partial<MonitoringFilters>) => void;
+  onChange: (next: Partial<Omit<MonitoringFilters, 'page'>>) => void;
 };
 
 // ADM-MON-01 조회 조건 (선택하면 바로 목록에 반영, ID 검색은 Enter·포커스 이동 시 반영)
