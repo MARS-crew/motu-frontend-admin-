@@ -1,3 +1,5 @@
+import type { MonitoringPeriod } from '@/types/monitoring';
+
 // 모든 관리자 계정은 같은 ADMIN 권한을 갖습니다. (ACTIVE 정상, SUSPENDED 정지)
 export type AdminAccountStatus = 'ACTIVE' | 'SUSPENDED';
 
@@ -47,21 +49,38 @@ export type ActivityAction =
 
 export type ActivityResult = 'SUCCESS' | 'FAILURE';
 
+// 활동 이력 목록 행
 export type ActivityLog = {
+  // 숫자 문자열
   activityLogId: string;
   // YYYY-MM-DDTHH:mm (KST)
   createdAt: string;
   adminLoginId: string;
   targetType: ActivityTargetType;
-  // PRD-018, USR-1024 같은 화면 표기용 대상
+  // PRD-018 · SaaS Index, USR-1024 · motuuser 같은 화면 표기용 대상
   targetLabel: string;
   action: ActivityAction;
   result: ActivityResult;
+};
+
+// 선택한 활동 이력의 변경 전·후 값과 사유
+export type ActivityLogDetail = {
   before: string;
   after: string;
   reason: string;
   // 마스킹된 접속 IP
   ipAddress: string;
+};
+
+export type ActivityLogFilters = {
+  adminLoginId: string;
+  targetType: ActivityTargetType | 'ALL';
+  action: ActivityAction | 'ALL';
+  period: MonitoringPeriod;
+  from: string | null;
+  to: string | null;
+  // 1부터
+  page: number;
 };
 
 // GET /admin/activity-logs 목록 항목

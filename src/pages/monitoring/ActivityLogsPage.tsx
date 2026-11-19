@@ -18,19 +18,12 @@ import {
   ACTIVITY_TARGET_FILTER_OPTIONS,
   getActivityActionFilterOptions,
 } from '@/constants/admin';
-import { ACTIVITY_LOGS_PREVIEW } from '@/constants/adminPreview';
-import type { ActivityAction, ActivityLog, ActivityTargetType } from '@/types/admin';
+import { useActivityLogDetailQuery, useActivityLogsQuery } from '@/queries/useActivityLogsQuery';
+import type { ActivityLog, ActivityLogFilters } from '@/types/admin';
 import type { MonitoringPeriod } from '@/types/monitoring';
+import { getApiErrorMessage } from '@/utils/apiError';
+import { Pagination } from '@/components/common/Pagination';
 import { formatDateTimeText, formatMonthDayTime } from '@/utils/date';
-
-type ActivityLogFilters = {
-  adminLoginId: string;
-  targetType: ActivityTargetType | 'ALL';
-  action: ActivityAction | 'ALL';
-  period: MonitoringPeriod;
-  from: string | null;
-  to: string | null;
-};
 
 const COLUMNS: TableColumn<ActivityLog>[] = [
   {
@@ -51,19 +44,7 @@ const COLUMNS: TableColumn<ActivityLog>[] = [
   },
 ];
 
-// TODO(MOTU-29-1): 서버 검색(GET /admin/activity-logs)으로 교체합니다.
-// 예시 데이터는 작업 기간과 관계없이 관리자·대상·수행 작업으로만 거릅니다.
-const filterPreview = (logs: ActivityLog[], filters: ActivityLogFilters) => {
-  const adminLoginId = filters.adminLoginId.trim().toLowerCase();
-  return logs.filter(
-    (log) =>
-      (!adminLoginId || log.adminLoginId.toLowerCase().includes(adminLoginId)) &&
-      (filters.targetType === 'ALL' || log.targetType === filters.targetType) &&
-      (filters.action === 'ALL' || log.action === filters.action),
-  );
-};
-
-// ADM-MON-04 관리자 활동 이력 (조건을 바꾸면 바로 목록에 반영, 이력은 수정·삭제 불가)
+// ADM-MON-04 관리자 활동 이력 (최신순, 한 페이지 20건, 조건을 바꾸면 바로 목록에 반영, 이력은 수정·삭제 불가)
 export default function ActivityLogsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters: ActivityLogFilters = {
@@ -73,15 +54,26 @@ export default function ActivityLogsPage() {
     period: (searchParams.get('period') as MonitoringPeriod) ?? '7d',
     from: searchParams.get('from'),
     to: searchParams.get('to'),
+    page: Math.max(Number(searchParams.get('page')) || 1, 1),
   };
   const [adminLoginId, setAdminLoginId] = useState(filters.adminLoginId);
 
-  const logs = filterPreview(ACTIVITY_LOGS_PREVIEW, filters);
+  const { data, isPending, isError, error } = useActivityLogsQuery(filters);
+  const logs = data?.logs ?? [];
+  // 선택 전에는 첫 번째(가장 최근) 이력을 보여줍니다.
   const selectedId = searchParams.get('log') ?? logs[0]?.activityLogId ?? null;
   const selected = logs.find((log) => log.activityLogId === selectedId) ?? null;
+  const { data: detail } = useActivityLogDetailQuery(
+    selected ? Number(selected.activityLogId) : null,
+  );
 
-  const updateFilters = (next: Partial<ActivityLogFilters>) => {
-    const merged = { ...filters, ...next };
+  const emptyMessage = isPending
+    ? '활동 이력을 불러오는 중입니다.'
+    : isError
+      ? getApiErrorMessage(error)
+      : '조건에 맞는 활동 이력이 없습니다.';
+
+  const applyParams = (merged: ActivityLogFilters) => {
     const params = new URLSearchParams();
     if (merged.adminLoginId.trim()) params.set('admin', merged.adminLoginId.trim());
     if (merged.targetType !== 'ALL') params.set('target', merged.targetType);
@@ -91,8 +83,13 @@ export default function ActivityLogsPage() {
       params.set('from', merged.from);
       params.set('to', merged.to);
     }
+    if (merged.page > 1) params.set('page', String(merged.page));
     setSearchParams(params, { replace: true });
   };
+  // 조회 조건을 바꾸면 첫 페이지부터 봅니다.
+  const updateFilters = (next: Partial<Omit<ActivityLogFilters, 'page'>>) =>
+    applyParams({ ...filters, ...next, page: 1 });
+  const changePage = (page: number) => applyParams({ ...filters, page });
 
   const handleApplyAdmin = () => {
     if (adminLoginId.trim() !== filters.adminLoginId) updateFilters({ adminLoginId });
@@ -155,19 +152,27 @@ export default function ActivityLogsPage() {
         rows={logs}
         getRowKey={(row) => row.activityLogId}
         gridClassName="grid-cols-[2fr_2fr_2fr_3fr_1.5fr]"
-        emptyMessage="조건에 맞는 활동 이력이 없습니다."
+        emptyMessage={emptyMessage}
         onRowClick={handleSelect}
         selectedRowKey={selected?.activityLogId ?? null}
       />
+
+      <Pagination page={filters.page} totalPages={data?.totalPages ?? 1} onChange={changePage} />
 
       {selected && (
         <InfoCard
           title="선택 이력 상세"
           items={[
-            { label: '변경 전', value: selected.before || '-' },
-            { label: '변경 후', value: selected.after || '-' },
-            { label: '처리 사유', value: selected.reason || '-' },
-            { label: '접속 IP', value: selected.ipAddress },
+            {
+              label: '변경 전',
+              value: <span className="whitespace-pre-line">{detail?.before ?? '-'}</span>,
+            },
+            {
+              label: '변경 후',
+              value: <span className="whitespace-pre-line">{detail?.after ?? '-'}</span>,
+            },
+            { label: '처리 사유', value: detail?.reason ?? '-' },
+            { label: '접속 IP', value: detail?.ipAddress ?? '-' },
             { label: '처리일시', value: formatDateTimeText(selected.createdAt) },
           ]}
         />

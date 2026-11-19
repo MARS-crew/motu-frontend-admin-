@@ -20,15 +20,24 @@ const PRESET_HOURS: Record<Exclude<MonitoringPeriod, 'custom'>, number> = {
   '30d': 24 * 30,
 };
 
-// 발생 기간 → API from·to (최근 N시간은 조회하는 시점 기준, 직접 설정은 KST 날짜 기준)
-const toPeriodParams = (filters: MonitoringFilters) => {
-  if (filters.period !== 'custom') {
-    return { from: new Date(Date.now() - PRESET_HOURS[filters.period] * HOUR_MS).toISOString() };
+// 기간 → API from·to (최근 N시간은 조회하는 시점 기준, 직접 설정은 KST 날짜 기준)
+// 거래 모니터링의 발생 기간과 관리자 활동 이력의 작업 기간에 씁니다.
+export const toPeriodParams = ({
+  period,
+  from,
+  to,
+}: {
+  period: MonitoringPeriod;
+  from: string | null;
+  to: string | null;
+}) => {
+  if (period !== 'custom') {
+    return { from: new Date(Date.now() - PRESET_HOURS[period] * HOUR_MS).toISOString() };
   }
-  const to = parseISODate(filters.to);
+  const toDate = parseISODate(to);
   return {
-    from: filters.from ? toKSTStartOfDay(filters.from) : undefined,
-    to: to ? toKSTStartOfDay(toISODate(addDays(to, 1))) : undefined,
+    from: from ? toKSTStartOfDay(from) : undefined,
+    to: toDate ? toKSTStartOfDay(toISODate(addDays(toDate, 1))) : undefined,
   };
 };
 
