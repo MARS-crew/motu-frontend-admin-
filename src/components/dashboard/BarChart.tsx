@@ -49,17 +49,21 @@ export function BarChart({ values, xLabels, label }: BarChartProps) {
             />
           ))}
           {values.map((value, index) => (
-            <div key={index} className="relative flex h-full flex-1 items-end justify-center">
+            <div
+              key={index}
+              className="relative flex h-full min-w-0 flex-1 items-end justify-center px-px"
+            >
+              {/* 구간이 많으면(최근 30일 등) 막대 폭을 줄여 차트 안에 맞춥니다. (최대 36px) */}
               <div
-                className="w-9 rounded-t bg-motu-black"
+                className="w-full max-w-9 rounded-t bg-motu-black"
                 style={{ height: `${max ? (value / max) * 100 : 0}%` }}
               />
             </div>
           ))}
         </div>
         <div className="flex justify-between text-label-sm font-medium text-motu-text-tertiary">
-          {xLabels.map((xLabel) => (
-            <span key={xLabel}>{xLabel}</span>
+          {xLabels.map((xLabel, index) => (
+            <span key={index}>{xLabel}</span>
           ))}
         </div>
       </div>

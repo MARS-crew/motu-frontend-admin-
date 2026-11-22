@@ -9,10 +9,10 @@ import {
   TRADE_METRIC_TEXTS,
   TRADE_RANGE_OPTIONS,
 } from '@/constants/dashboard';
-import { TRADE_TREND_PREVIEW } from '@/constants/dashboardPreview';
 import { useDismiss } from '@/hooks/useDismiss';
+import { useTradeTrendQuery } from '@/queries/useDashboardQuery';
 import type { TradeMetric, TradeRange } from '@/types/dashboard';
-import { formatDate } from '@/utils/date';
+import { getApiErrorMessage } from '@/utils/apiError';
 import { formatCompactKorean, formatNumber } from '@/utils/format';
 
 const formatTotal = (metric: TradeMetric, total: number) =>
@@ -44,13 +44,11 @@ export function TradeTrendCard() {
     setIsPickerOpen(false);
   };
 
-  // TODO(MOTU-19-2): metric·range(customRange) 로 거래 추이 API 조회
-  const trend = TRADE_TREND_PREVIEW[metric];
+  // 거래량·거래대금은 같은 응답이라 지표를 바꿔도 다시 조회하지 않습니다.
+  const { data: chart, isError, error } = useTradeTrendQuery(range, customRange);
+  const trend = chart?.metrics[metric];
   const texts = TRADE_METRIC_TEXTS[metric];
-  const periodLabel =
-    range === 'custom' && customRange.start && customRange.end
-      ? `${formatDate(customRange.start)} ~ ${formatDate(customRange.end)}`
-      : trend.periodLabel;
+  const periodLabel = isError ? getApiErrorMessage(error) : (chart?.periodLabel ?? '');
 
   return (
     <section className="flex min-w-0 flex-1 flex-col gap-4 rounded-[14px] border border-motu-border bg-white px-6 py-5">
@@ -101,12 +99,12 @@ export function TradeTrendCard() {
       <div className="flex items-baseline gap-2.5 whitespace-nowrap">
         <p className="text-body-sm font-medium text-motu-text-secondary">{texts.totalLabel}</p>
         <p className="text-title-lg font-bold text-motu-text-primary">
-          {formatTotal(metric, trend.total)}
+          {trend ? formatTotal(metric, trend.total) : '-'}
         </p>
         <p className="text-label-md font-medium text-motu-text-tertiary">{periodLabel}</p>
       </div>
 
-      <BarChart values={trend.values} xLabels={trend.xLabels} label={texts.title} />
+      <BarChart values={trend?.values ?? []} xLabels={chart?.xLabels ?? []} label={texts.title} />
 
       <p className="text-right text-label-sm font-medium text-motu-text-tertiary">
         {texts.unitLabel}
