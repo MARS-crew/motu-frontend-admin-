@@ -11,13 +11,13 @@ export const INQUIRY_TYPE_LABELS: Record<InquiryType, string> = {
 export const INQUIRY_STATUS_LABELS: Record<InquiryStatus, string> = {
   SUBMITTED: '접수',
   IN_PROGRESS: '처리 중',
-  APPROVED: '처리 완료',
+  COMPLETED: '처리 완료',
 };
 
 export const INQUIRY_STATUS_TONES: Record<InquiryStatus, BadgeTone> = {
   SUBMITTED: 'neutral',
   IN_PROGRESS: 'success',
-  APPROVED: 'muted',
+  COMPLETED: 'muted',
 };
 
 export const INQUIRY_STATUS_FILTER_OPTIONS: SelectOption<InquiryStatus | 'ALL'>[] = [
@@ -35,3 +35,6 @@ export const INQUIRY_TYPE_FILTER_OPTIONS: SelectOption<InquiryType | 'ALL'>[] = 
     label: INQUIRY_TYPE_LABELS[value],
   })),
 ];
+
+// 계정·인증 문의 목록 한 페이지 건수
+export const INQUIRY_PAGE_SIZE = 20;
