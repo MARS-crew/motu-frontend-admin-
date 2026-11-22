@@ -123,3 +123,11 @@ export type AdminActivityLogsParams = {
   page: number;
   size: number;
 };
+
+// POST /admin/admin-accounts (담당 업무는 참고값, 비우면 보내지 않습니다)
+export type CreateAdminAccountRequest = {
+  loginId: string;
+  name: string;
+  email: string;
+  duty?: string;
+};
