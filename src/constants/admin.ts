@@ -33,6 +33,7 @@ export const ACTIVITY_TARGET_LABELS: Record<ActivityTargetType, string> = {
   USER: '회원',
   ADMIN: '관리자 계정',
   NOTICE: '공지',
+  INQUIRY: '계정·인증 문의',
   ANOMALY: '이상 거래',
 };
 
@@ -56,6 +57,9 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   NOTICE_HIDE: '공지 비공개',
   NOTICE_DELETE: '공지 삭제',
   NOTICE_UPDATE: '공지 수정',
+  INQUIRY_START: '문의 처리 시작',
+  INQUIRY_REPLY_DRAFT_SAVE: '문의 답변 저장',
+  INQUIRY_REPLY_SEND: '문의 답변 발송',
   ANOMALY_ACTION: '이상 거래 조치',
 };
 
@@ -73,6 +77,7 @@ export const ACTIVITY_ACTIONS_BY_TARGET: Record<ActivityTargetType, ActivityActi
   USER: ['USER_STATUS_CHANGE', 'USER_UNLOCK', 'POINT_GRANT', 'POINT_RECALL'],
   ADMIN: ['ADMIN_CREATE', 'ADMIN_STATUS_CHANGE'],
   NOTICE: ['NOTICE_PUBLISH', 'NOTICE_UPDATE', 'NOTICE_HIDE', 'NOTICE_DELETE'],
+  INQUIRY: ['INQUIRY_START', 'INQUIRY_REPLY_DRAFT_SAVE', 'INQUIRY_REPLY_SEND'],
   ANOMALY: ['ANOMALY_ACTION'],
 };
 

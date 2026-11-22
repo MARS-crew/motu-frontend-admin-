@@ -25,7 +25,7 @@ export type AdminAccountFilters = {
 
 // 백엔드 관리자 활동 이력 enum 과 같은 값을 씁니다.
 export type ActivityTargetType =
-  'LISTING_APPLICATION' | 'STOCK' | 'USER' | 'ADMIN' | 'NOTICE' | 'ANOMALY';
+  'LISTING_APPLICATION' | 'STOCK' | 'USER' | 'ADMIN' | 'NOTICE' | 'INQUIRY' | 'ANOMALY';
 
 export type ActivityAction =
   | 'LISTING_REVIEW_START'
@@ -47,6 +47,9 @@ export type ActivityAction =
   | 'NOTICE_HIDE'
   | 'NOTICE_DELETE'
   | 'NOTICE_UPDATE'
+  | 'INQUIRY_START'
+  | 'INQUIRY_REPLY_DRAFT_SAVE'
+  | 'INQUIRY_REPLY_SEND'
   | 'ANOMALY_ACTION';
 
 export type ActivityResult = 'SUCCESS' | 'FAILURE';
