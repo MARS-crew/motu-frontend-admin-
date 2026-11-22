@@ -14,6 +14,8 @@ import { formatNumber } from '@/utils/format';
 type ListingReviewConfirmModalProps = {
   form: ListingReviewForm | null;
   isSubmitting: boolean;
+  // 처리 실패 안내 (모달을 닫지 않고 보여줍니다)
+  errorMessage?: string;
   onClose: () => void;
   onConfirm: () => void;
 };
@@ -43,6 +45,7 @@ const getConfirmRows = (form: ListingReviewForm): InfoItem[] => {
       { label: '처리 결과', value: resultLabel },
       { label: '보완 항목', value: itemLabel },
       { label: '요청 내용', value: form.revisionRequest },
+      { label: '보완 기한', value: `${toDateText(form.revisionDeadline)} (KST)` },
     ];
   }
   return [
@@ -55,6 +58,7 @@ const getConfirmRows = (form: ListingReviewForm): InfoItem[] => {
 export function ListingReviewConfirmModal({
   form,
   isSubmitting,
+  errorMessage,
   onClose,
   onConfirm,
 }: ListingReviewConfirmModalProps) {
@@ -89,7 +93,11 @@ export function ListingReviewConfirmModal({
               <InfoRow key={row.label} label={row.label} value={row.value} />
             ))}
           </dl>
-          <Notice tone={texts.noticeTone}>{texts.notice}</Notice>
+          {errorMessage ? (
+            <Notice tone="danger">{errorMessage}</Notice>
+          ) : (
+            <Notice tone={texts.noticeTone}>{texts.notice}</Notice>
+          )}
         </>
       )}
     </Modal>

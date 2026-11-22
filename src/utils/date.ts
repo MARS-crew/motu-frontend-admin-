@@ -83,3 +83,6 @@ export const toLocalDateTime = (value: string) => {
 
 // 화면에서 고른 날짜(YYYY-MM-DD)의 KST 자정 → API 일시 '2026-09-01T00:00:00+09:00'
 export const toKSTStartOfDay = (value: string) => `${value}T00:00:00+09:00`;
+
+// 화면에서 고른 일시(YYYY-MM-DDTHH:mm, KST) → API 일시 '2026-09-01T09:00:00+09:00'
+export const toKSTDateTime = (value: string) => `${value}:00+09:00`;

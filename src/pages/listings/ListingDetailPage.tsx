@@ -1,6 +1,9 @@
-import { Link, useParams, useSearchParams } from 'react-router';
+import { useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 
-import { buttonClassName } from '@/components/common/buttonClassName';
+import { Button } from '@/components/common/Button';
+import { Notice } from '@/components/common/Notice';
+import { RevisionDeadlineModal } from '@/components/listing/RevisionDeadlineModal';
 import { Chip } from '@/components/common/Chip';
 import { PlaceholderSection } from '@/components/common/PlaceholderSection';
 import {
@@ -19,6 +22,8 @@ import {
 import { getListingReviewPath } from '@/constants/routes';
 import { useListingListPath } from '@/hooks/useListingListPath';
 import { useListingApplicationQuery } from '@/queries/useListingApplicationQuery';
+import { useStartListingReviewMutation } from '@/queries/useListingReviewMutations';
+import { formatDateTimeText } from '@/utils/date';
 import type { ListingDetailTab } from '@/types/listing';
 import { getApiErrorMessage } from '@/utils/apiError';
 
@@ -30,6 +35,9 @@ export default function ListingDetailPage() {
   const { applicationId = '' } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { listPath, locationState } = useListingListPath();
+  const navigate = useNavigate();
+  const [isExtendOpen, setIsExtendOpen] = useState(false);
+  const startReview = useStartListingReviewMutation(Number(applicationId));
   const {
     data: application,
     isPending,
@@ -57,6 +65,20 @@ export default function ListingDetailPage() {
   }
 
   const canReview = !REVIEWED_LISTING_STATUSES.includes(application.status);
+  const { pendingRevision } = application;
+
+  // 접수 상태는 검토 시작 API 가 성공한 뒤 심사 처리 화면으로 이동합니다. 이미 검토중이면 바로 이동합니다.
+  // 다른 관리자가 먼저 처리했다면 실패 안내를 보여주고, 상세는 최신 상태로 다시 불러옵니다.
+  const handleOpenReview = () => {
+    const reviewPath = getListingReviewPath(String(application.id));
+    if (application.status !== 'SUBMITTED') {
+      void navigate(reviewPath, { state: locationState });
+      return;
+    }
+    startReview.mutate(undefined, {
+      onSuccess: () => void navigate(reviewPath, { state: locationState }),
+    });
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -99,16 +121,36 @@ export default function ListingDetailPage() {
         </div>
       )}
 
+      {pendingRevision && (
+        <Notice>
+          보완 요청 · {pendingRevision.requestItems.join(', ')} · 기한{' '}
+          {formatDateTimeText(pendingRevision.deadline)} (KST) · 재제출 대기
+        </Notice>
+      )}
+
+      {startReview.error && <Notice tone="danger">{getApiErrorMessage(startReview.error)}</Notice>}
+
       {canReview && (
-        <div className="flex justify-end">
-          <Link
-            to={getListingReviewPath(String(application.id))}
-            state={locationState}
-            className={buttonClassName()}
-          >
+        <div className="flex justify-end gap-2">
+          {/* 보완 요청 · 미재제출 회차에서만 표시합니다. */}
+          {pendingRevision && (
+            <Button variant="secondary" onClick={() => setIsExtendOpen(true)}>
+              보완 기한 연장
+            </Button>
+          )}
+          <Button disabled={startReview.isPending} onClick={handleOpenReview}>
             심사 결과 처리
-          </Link>
+          </Button>
         </div>
+      )}
+
+      {pendingRevision && (
+        <RevisionDeadlineModal
+          isOpen={isExtendOpen}
+          applicationId={application.id}
+          revision={pendingRevision}
+          onClose={() => setIsExtendOpen(false)}
+        />
       )}
     </div>
   );

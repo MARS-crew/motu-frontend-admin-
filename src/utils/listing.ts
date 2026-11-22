@@ -13,6 +13,7 @@ import {
   parseISODate,
   toISODate,
   toKSTStartOfDay,
+  toLocalDateTime,
 } from '@/utils/date';
 import { formatFileSize, formatNumber } from '@/utils/format';
 
@@ -98,6 +99,22 @@ const toEvidenceFiles = (collection: ListingAttachmentCollection | null, fallbac
     .filter((attachment) => attachment.saved)
     .map((attachment) => toEvidenceFile(attachment, collection?.description ?? fallback));
 
+// 보완 요청 상태에서 아직 재제출하지 않은 가장 최근 보완 요청 (기한 연장 대상)
+const toPendingRevision = (response: ListingApplicationResponse) => {
+  if (response.status !== 'REVISION_REQUESTED') return null;
+  const latest = [...response.revisions]
+    .filter((revision) => revision.resubmittedAt === null)
+    .sort((a, b) => b.createDate.localeCompare(a.createDate))[0];
+  return latest
+    ? {
+        revisionId: latest.id,
+        requestItems: latest.requestItems,
+        requestContent: latest.requestContent,
+        deadline: toLocalDateTime(latest.deadline),
+      }
+    : null;
+};
+
 // 상세 API 응답 → 상세 화면 표시용
 export const toListingApplicationDetail = (
   response: ListingApplicationResponse,
@@ -142,5 +159,6 @@ export const toListingApplicationDetail = (
       ),
     },
     evidences: toEvidenceFiles(response.attachments.evidence, data.evidenceDescription ?? ''),
+    pendingRevision: toPendingRevision(response),
   };
 };
