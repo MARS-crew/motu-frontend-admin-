@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { patchAdminAccountCash } from '@/apis/adminAccount';
+import { patchAdminAccountCash } from '@/apis/memberAccount';
 import { patchAdminUserStatus, postUnlockAdminUser } from '@/apis/adminUser';
 import { ACTIVITY_LOGS_QUERY_KEY } from '@/queries/useActivityLogsQuery';
 import { ANOMALIES_QUERY_KEY } from '@/queries/useAnomaliesQuery';

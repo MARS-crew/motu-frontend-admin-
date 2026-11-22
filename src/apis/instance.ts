@@ -2,7 +2,7 @@ import type { InternalAxiosRequestConfig } from 'axios';
 import { create, isAxiosError } from 'axios';
 
 import { API_URL } from '@/constants/env';
-import { AUTH_TOKEN_EXPIRED } from '@/constants/errorCodes';
+import { ADMIN_PASSWORD_CHANGE_REQUIRED, AUTH_TOKEN_EXPIRED } from '@/constants/errorCodes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { ApiResponse } from '@/types/api';
 import type { TokenResponse } from '@/types/auth';
@@ -57,6 +57,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error: unknown) => {
+    // 새로고침 등으로 로그인 응답을 다시 받지 못해도, 서버가 비밀번호 변경을 요구하면 변경 화면으로 보냅니다.
+    if (getApiError(error)?.code === ADMIN_PASSWORD_CHANGE_REQUIRED) {
+      useAuthStore.getState().setPasswordChangeRequired(true);
+      return Promise.reject(error);
+    }
     if (!isAxiosError(error) || error.response?.status !== 401) {
       return Promise.reject(error);
     }

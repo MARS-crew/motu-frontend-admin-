@@ -24,7 +24,7 @@ export default function PasswordResetConfirmPage() {
     defaultValues: { newPassword: '', newPasswordConfirm: '' },
   });
 
-  // TODO(MOTU-18-1): 새 비밀번호 설정 API 연동 (URL 의 token 사용, 만료·사용된 링크 처리)
+  // TODO(MOTU-18-1): 관리자 비밀번호 재설정 API(백엔드 MOTU-18-1-2)가 나오면 연동합니다. (URL 의 token 사용, 만료·사용된 링크 처리)
   // 변경이 끝나면 기존 관리자 세션이 모두 만료되므로 로그인 화면으로 이동합니다.
   const handleChangePassword = () => void navigate(ROUTES.LOGIN, { replace: true });
 

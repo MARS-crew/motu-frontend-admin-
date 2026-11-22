@@ -25,7 +25,7 @@ export default function PasswordResetRequestPage() {
     defaultValues: { email: '' },
   });
 
-  // TODO(MOTU-18-1): 재설정 링크 발송 API 연동
+  // TODO(MOTU-18-1): 관리자 비밀번호 재설정 API(백엔드 MOTU-18-1-2)가 나오면 재설정 링크 발송을 연동합니다.
   // - 등록되지 않은 관리자 이메일이면 setError('email', { message: '등록된 관리자 이메일이 아닙니다.' })
   const handleRequest = () => setIsSent(true);
   const handleBackToLogin = () => void navigate(ROUTES.LOGIN);

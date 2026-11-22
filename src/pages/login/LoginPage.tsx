@@ -16,9 +16,8 @@ import { getApiError } from '@/utils/apiError';
 import { getLoginErrorMessage } from '@/utils/authError';
 
 // ADM-AUTH-01 관리자 로그인
-// - 관리자 계정 → 원래 보던 화면(없으면 대시보드), 정지 계정 → 접근 차단 화면
+// - 관리자 계정 → 원래 보던 화면(없으면 대시보드), 임시 비밀번호 계정 → 최초 비밀번호 변경, 정지 계정 → 접근 차단 화면
 // - 일반 회원·잠긴 계정·비밀번호 오류는 비밀번호 칸 아래에 안내합니다.
-// TODO(MOTU-18-1): 최초 로그인(임시 비밀번호) 분기는 서버가 임시 비밀번호 여부를 내려주면 추가합니다.
 export default function LoginPage() {
   const navigate = useNavigate();
   const { mutate: login, isPending, error, reset } = useLoginMutation();

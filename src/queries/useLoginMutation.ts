@@ -7,6 +7,7 @@ import { tokenStorage } from '@/utils/tokenStorage';
 
 export const useLoginMutation = () => {
   const setStatus = useAuthStore((state) => state.setStatus);
+  const setPasswordChangeRequired = useAuthStore((state) => state.setPasswordChangeRequired);
 
   return useMutation({
     mutationFn: async (body: Parameters<typeof postLogin>[0]) => {
@@ -22,8 +23,10 @@ export const useLoginMutation = () => {
     },
     retry: false,
     // 로그인 상태가 되면 PublicOnlyRoute 가 원래 보던 화면(없으면 대시보드)으로 이동합니다.
-    onSuccess: ({ accessToken, refreshToken }) => {
+    // 임시 비밀번호 계정이면 ProtectedRoute 가 최초 비밀번호 변경 화면으로 보냅니다.
+    onSuccess: ({ accessToken, refreshToken, passwordChangeRequired }) => {
       tokenStorage.setTokens(accessToken, refreshToken);
+      setPasswordChangeRequired(passwordChangeRequired ?? false);
       setStatus('authenticated');
     },
   });
