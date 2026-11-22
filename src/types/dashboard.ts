@@ -19,16 +19,6 @@ export type TradeMetric = 'volume' | 'amount';
 
 export type TradeRange = '1h' | '6h' | '1d' | '1w' | '1m' | 'all' | 'custom';
 
-export type TradeTrend = {
-  total: number;
-  // 2026.09.11 00:00 ~ 24:00
-  periodLabel: string;
-  // 집계 구간별 체결 합계
-  values: number[];
-  // X축 눈금 라벨 (양 끝 포함)
-  xLabels: string[];
-};
-
 export type AdminActivity = {
   id: string;
   // HH:mm
@@ -70,4 +60,11 @@ export type TradeTrendResponse = {
   totalTradeAmount: number;
   // 시간순 구간별 합계 (체결이 없는 구간도 0)
   buckets: { time: string; volume: number; tradeAmount: number }[];
+};
+
+// 거래 추이 카드에 그릴 값 (거래량·거래대금 모두)
+export type TradeTrendChart = {
+  periodLabel: string;
+  xLabels: string[];
+  metrics: Record<TradeMetric, { total: number; values: number[] }>;
 };
