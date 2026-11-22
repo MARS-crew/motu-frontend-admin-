@@ -22,6 +22,8 @@ export type LoginRequest = {
 
 export type LoginResponse = TokenResponse & {
   verificationRequired: false;
+  // 임시 비밀번호로 로그인한 관리자 (비밀번호를 바꾸기 전에는 다른 관리자 API 가 403)
+  passwordChangeRequired?: boolean;
   user: LoginUser;
 };
 
