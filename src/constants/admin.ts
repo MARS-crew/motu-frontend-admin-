@@ -37,8 +37,10 @@ export const ACTIVITY_TARGET_LABELS: Record<ActivityTargetType, string> = {
 };
 
 export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
+  LISTING_REVIEW_START: '검토 시작',
   LISTING_APPROVE: '상장 승인',
   LISTING_REVISION_REQUEST: '보완 요청',
+  LISTING_REVISION_DEADLINE_UPDATE: '보완 기한 연장',
   LISTING_REJECT: '반려',
   STOCK_UPDATE: '상품 정보 수정',
   STOCK_PAUSE: '상품 거래 중지',
@@ -59,7 +61,14 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
 
 // 작업 대상별로 고를 수 있는 수행 작업입니다. (대상을 바꾸면 수행 작업은 '전체'로 초기화)
 export const ACTIVITY_ACTIONS_BY_TARGET: Record<ActivityTargetType, ActivityAction[]> = {
-  LISTING_APPLICATION: ['LISTING_APPROVE', 'LISTING_REVISION_REQUEST', 'LISTING_REJECT'],
+  // 화면설계서 ADM-MON-04 순서: 검토 시작 · 상장 승인 · 보완 요청 · 보완 기한 연장 · 반려
+  LISTING_APPLICATION: [
+    'LISTING_REVIEW_START',
+    'LISTING_APPROVE',
+    'LISTING_REVISION_REQUEST',
+    'LISTING_REVISION_DEADLINE_UPDATE',
+    'LISTING_REJECT',
+  ],
   STOCK: ['STOCK_UPDATE', 'STOCK_PAUSE', 'STOCK_RESUME', 'STOCK_CLOSE'],
   USER: ['USER_STATUS_CHANGE', 'USER_UNLOCK', 'POINT_GRANT', 'POINT_RECALL'],
   ADMIN: ['ADMIN_CREATE', 'ADMIN_STATUS_CHANGE'],

@@ -71,11 +71,43 @@ export type ListingAttachmentCollection = {
 
 export type ListingRevision = {
   id: number;
+  // 보완이 필요한 항목명
+  requestItems: string[];
   requestContent: string;
+  // 보완 기한 (ISO, UTC)
   deadline: string;
   createDate: string;
+  // 재제출하지 않았으면 null
   resubmittedAt: string | null;
   evidence: ListingAttachmentCollection | null;
+};
+
+// POST /admin/listing-applications/{id}/approve
+export type ApproveListingRequest = {
+  reason: string;
+  // 양의 정수 문자열
+  finalPrice: string;
+  totalIssuedQuantity: string;
+  // KST 날짜 YYYY-MM-DD
+  listingDate: string;
+  // 시간대 포함 미래 일시
+  tradingStartAt: string;
+  // 최종 상장가를 희망 상장가와 다르게 정하면 처리 사유를 조정 사유로 함께 보냅니다.
+  priceAdjustmentReason?: string;
+};
+
+// POST /admin/listing-applications/{id}/revision-requests
+export type RequestListingRevisionRequest = {
+  requestItems: string[];
+  requestContent: string;
+  // 시간대 포함 미래 일시
+  deadline: string;
+};
+
+// POST /admin/listing-applications/{id}/revision-requests/{revisionId}/extend-deadline
+export type ExtendRevisionDeadlineRequest = {
+  reason: string;
+  deadline: string;
 };
 
 // 신청서 입력값입니다. 숫자도 입력한 문자열 그대로 내려옵니다.
@@ -182,6 +214,14 @@ export type ListingApplicationDetail = {
     transactionSource: string | null;
   };
   evidences: ListingEvidenceFile[];
+  // 재제출을 기다리는 보완 요청 (보완 요청 상태에서 미재제출 회차만, 없으면 null)
+  pendingRevision: {
+    revisionId: number;
+    requestItems: string[];
+    requestContent: string;
+    // YYYY-MM-DDTHH:mm (KST)
+    deadline: string;
+  } | null;
 };
 
 // approve: 승인 / revision: 보완 요청 / reject: 반려

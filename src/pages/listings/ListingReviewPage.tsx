@@ -22,7 +22,17 @@ import { useListingApplicationQuery } from '@/queries/useListingApplicationQuery
 import type { ListingReviewForm } from '@/schemas/listingReviewSchema';
 import { listingReviewSchema } from '@/schemas/listingReviewSchema';
 import type { ListingReviewResult } from '@/types/listing';
+import {
+  useApproveListingMutation,
+  useRejectListingMutation,
+  useRequestListingRevisionMutation,
+} from '@/queries/useListingReviewMutations';
+import { getApiErrorMessage } from '@/utils/apiError';
+import { toKSTDateTime } from '@/utils/date';
 import { formatNumber } from '@/utils/format';
+
+// 쉼표를 뺀 숫자 문자열 (12,000 → 12000)
+const toDigits = (value: string) => value.replaceAll(',', '').trim();
 
 // ADM-LST-03 상장 신청 심사 결과 처리 (승인 · 보완 요청 · 반려)
 export default function ListingReviewPage() {
@@ -31,7 +41,13 @@ export default function ListingReviewPage() {
   const { listPath } = useListingListPath();
   const [confirmForm, setConfirmForm] = useState<ListingReviewForm | null>(null);
 
-  const { data: application } = useListingApplicationQuery(Number(applicationId));
+  const id = Number(applicationId);
+  const { data: application } = useListingApplicationQuery(id);
+  const approve = useApproveListingMutation(id);
+  const requestRevision = useRequestListingRevisionMutation(id);
+  const reject = useRejectListingMutation(id);
+  const submitError = approve.error ?? requestRevision.error ?? reject.error;
+  const isSubmitting = approve.isPending || requestRevision.isPending || reject.isPending;
 
   const {
     control,
@@ -53,6 +69,7 @@ export default function ListingReviewPage() {
       reason: '',
       revisionItem: '',
       revisionRequest: '',
+      revisionDeadline: '',
     },
     resetOptions: { keepDirtyValues: true },
   });
@@ -68,12 +85,52 @@ export default function ListingReviewPage() {
     clearErrors();
   };
   // 처리 전 확인 모달을 띄웁니다.
-  const handleOpenConfirm = (form: ListingReviewForm) => setConfirmForm(form);
+  const handleOpenConfirm = (form: ListingReviewForm) => {
+    approve.reset();
+    requestRevision.reset();
+    reject.reset();
+    setConfirmForm(form);
+  };
   const handleCloseConfirm = () => setConfirmForm(null);
-  // TODO(MOTU-21-1): 심사 결과 처리 API 연동 (백엔드 PR #90 머지 후) (승인 시 최종 상장가·발행량·상장일·거래 시작일시 확정)
+  // 처리 상태와 처리자는 서버가 관리자 활동 이력에 저장합니다.
   const handleConfirm = () => {
-    setConfirmForm(null);
-    void navigate(listPath, { replace: true });
+    if (!confirmForm) return;
+    const form = confirmForm;
+    const options = { onSuccess: () => void navigate(listPath, { replace: true }) };
+
+    if (form.result === 'approve') {
+      const finalPrice = toDigits(form.finalPrice);
+      const reason = form.reason.trim();
+      approve.mutate(
+        {
+          reason,
+          finalPrice,
+          totalIssuedQuantity: toDigits(form.totalSupply),
+          listingDate: form.listingDate,
+          tradingStartAt: toKSTDateTime(form.tradeStartAt),
+          // 희망 상장가와 다르게 정하면 같은 사유를 상장가 조정 사유로 저장합니다.
+          priceAdjustmentReason:
+            Number(finalPrice) !== application.desiredPrice ? reason : undefined,
+        },
+        options,
+      );
+      return;
+    }
+    if (form.result === 'revision') {
+      const itemLabel =
+        LISTING_REVISION_ITEM_OPTIONS.find((option) => option.value === form.revisionItem)?.label ??
+        form.revisionItem;
+      requestRevision.mutate(
+        {
+          requestItems: [itemLabel],
+          requestContent: form.revisionRequest.trim(),
+          deadline: toKSTDateTime(form.revisionDeadline),
+        },
+        options,
+      );
+      return;
+    }
+    reject.mutate(form.reason.trim(), options);
   };
 
   return (
@@ -178,6 +235,19 @@ export default function ListingReviewPage() {
               {...register('revisionRequest')}
             />
           </Field>
+          <Field
+            label="보완 기한 * (KST)"
+            htmlFor="revisionDeadline"
+            errorMessage={errors.revisionDeadline?.message}
+            className="w-80"
+          >
+            <TextInput
+              id="revisionDeadline"
+              type="datetime-local"
+              hasError={Boolean(errors.revisionDeadline)}
+              {...register('revisionDeadline')}
+            />
+          </Field>
         </>
       )}
 
@@ -200,7 +270,8 @@ export default function ListingReviewPage() {
 
       <ListingReviewConfirmModal
         form={confirmForm}
-        isSubmitting={false}
+        isSubmitting={isSubmitting}
+        errorMessage={submitError ? getApiErrorMessage(submitError) : undefined}
         onClose={handleCloseConfirm}
         onConfirm={handleConfirm}
       />

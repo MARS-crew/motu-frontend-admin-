@@ -9,7 +9,14 @@ import type {
   NoticeFilters,
   NoticeSummary,
 } from '@/types/notice';
-import { addDays, parseISODate, toISODate, toKSTStartOfDay, toLocalDateTime } from '@/utils/date';
+import {
+  addDays,
+  parseISODate,
+  toISODate,
+  toKSTDateTime,
+  toKSTStartOfDay,
+  toLocalDateTime,
+} from '@/utils/date';
 import { formatProductCode } from '@/utils/product';
 
 // 화면 검색 조건 → 목록 API 파라미터 (게시 기간 종료일은 그날 하루를 포함합니다)
@@ -44,8 +51,8 @@ export const toNoticeDetail = (response: AdminNoticeResponse): NoticeDetail => (
   content: response.content,
 });
 
-// 화면 일시(YYYY-MM-DDTHH:mm, KST) → API 일시
-const toKSTDateTime = (value: string) => (value ? `${value}:00+09:00` : null);
+// 비어 있으면 null 로 보냅니다.
+const toOptionalKSTDateTime = (value: string) => (value ? toKSTDateTime(value) : null);
 
 // 작성 폼 → 공지 요청 본문 (전체 공지는 대상 상품을 보내지 않습니다)
 export const toAdminNoticeRequest = (form: NoticeForm): AdminNoticeRequest => ({
@@ -54,6 +61,6 @@ export const toAdminNoticeRequest = (form: NoticeForm): AdminNoticeRequest => ({
   title: form.title.trim(),
   content: form.content,
   isImportant: form.isImportant,
-  postStartDate: toKSTDateTime(form.startAt),
-  postEndDate: toKSTDateTime(form.endAt),
+  postStartDate: toOptionalKSTDateTime(form.startAt),
+  postEndDate: toOptionalKSTDateTime(form.endAt),
 });
