@@ -28,3 +28,7 @@ export const TRADE_METRIC_TEXTS: Record<
     unitLabel: '단위: 포인트(P)',
   },
 };
+
+// 대시보드 최근 운영 이력: 최근 7일 중 최신 4건
+export const RECENT_ACTIVITY_DAYS = 7;
+export const RECENT_ACTIVITY_COUNT = 4;
