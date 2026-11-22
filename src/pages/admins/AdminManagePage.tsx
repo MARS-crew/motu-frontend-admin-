@@ -19,6 +19,8 @@ import {
 import { ROUTES } from '@/constants/routes';
 import type { AdminCreateForm, AdminStatusForm } from '@/schemas/adminSchema';
 import { adminCreateSchema, adminStatusSchema } from '@/schemas/adminSchema';
+import { useCreateAdminAccountMutation } from '@/queries/useCreateAdminAccountMutation';
+import { getApiErrorMessage } from '@/utils/apiError';
 import { cn } from '@/utils/cn';
 
 const CARD_CLASS_NAME =
@@ -41,6 +43,11 @@ export default function AdminManagePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [statusError, setStatusError] = useState<string | null>(null);
+  const {
+    mutate: createAccount,
+    isPending: isCreating,
+    error: createError,
+  } = useCreateAdminAccountMutation();
 
   // TODO(MOTU-29-1): 관리자 계정 상세 API 연동
   const target = getAdminAccountPreview(searchParams.get('target') ?? '');
@@ -60,10 +67,21 @@ export default function AdminManagePage() {
   const createErrors = createForm.formState.errors;
   const statusErrors = statusForm.formState.errors;
 
-  // TODO(MOTU-29-1): 계정 생성 API 연동 (임시 비밀번호를 등록 이메일로 안내, 최초 로그인 시 비밀번호 변경)
-  const handleCreate = () => void navigate(ROUTES.ADMINS);
+  // 임시 비밀번호는 서버가 등록 이메일로 보내고, 최초 로그인 시 비밀번호를 바꾸게 합니다.
+  // 메일을 보내지 못하면 계정도 만들지 않으며, 실패하면 입력값을 유지합니다.
+  const handleCreate = (form: AdminCreateForm) =>
+    createAccount(
+      {
+        loginId: form.loginId.trim(),
+        name: form.name.trim(),
+        email: form.email.trim(),
+        duty: form.duty.trim() || undefined,
+      },
+      { onSuccess: () => void navigate(ROUTES.ADMINS) },
+    );
 
-  // TODO(MOTU-29-1): 상태 변경 API 연동 (성공한 변경은 관리자 활동 이력에 저장, 오류 시 입력값 유지)
+  // TODO(MOTU-29-1): 관리자 계정 목록·상세 API(백엔드 MOTU-29-1-3)가 나오면 상태 변경 API 를 연동합니다.
+  // (PATCH /admin/admin-accounts/{userId}/status, 본인·마지막 정상 관리자 정지는 서버가 거절)
   const handleChangeStatus = (form: AdminStatusForm) => {
     if (!target) return;
     const error = getStatusError(target.loginId, form);
@@ -105,11 +123,18 @@ export default function AdminManagePage() {
             {...createForm.register('email')}
           />
         </Field>
-        <Field label="담당 업무(참고)" htmlFor="duty">
-          <TextInput id="duty" {...createForm.register('duty')} />
+        <Field label="담당 업무(참고)" htmlFor="duty" errorMessage={createErrors.duty?.message}>
+          <TextInput
+            id="duty"
+            hasError={Boolean(createErrors.duty)}
+            {...createForm.register('duty')}
+          />
         </Field>
+        {createError && <Notice tone="danger">{getApiErrorMessage(createError)}</Notice>}
         <div className="flex flex-1 items-end justify-end">
-          <Button type="submit">계정 생성</Button>
+          <Button type="submit" disabled={isCreating}>
+            계정 생성
+          </Button>
         </div>
       </form>
 
