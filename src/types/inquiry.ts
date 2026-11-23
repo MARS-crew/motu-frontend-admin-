@@ -67,6 +67,10 @@ export type SendInquiryReplyRequest = {
   requestId: string;
   // 확인 모달 직전 초안 저장 응답의 replyVersion
   expectedDraftVersion: number;
+  // 이전 발송 결과를 알 수 없을 때(UNKNOWN) 발송 이력을 확인한 뒤 재발송에 동의
+  confirmResend?: boolean;
+  // confirmResend 일 때 필수 (1~200자)
+  retryReason?: string;
 };
 
 export type InquirySummary = {

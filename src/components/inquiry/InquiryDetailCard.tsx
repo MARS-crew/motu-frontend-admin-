@@ -8,6 +8,7 @@ import { InfoRow } from '@/components/common/InfoRow';
 import { Modal } from '@/components/common/Modal';
 import { Notice } from '@/components/common/Notice';
 import { TextArea } from '@/components/common/TextArea';
+import { InquiryResendModal } from '@/components/inquiry/InquiryResendModal';
 import { INQUIRY_TYPE_LABELS } from '@/constants/inquiry';
 import {
   useSaveInquiryDraftMutation,
@@ -35,7 +36,8 @@ const ATTEMPT_NOTICES: Partial<
   Record<NonNullable<InquiryDetail['latestAttempt']>['status'], string>
 > = {
   SENDING: '답변을 발송하는 중입니다. 잠시 후 다시 확인해 주세요.',
-  UNKNOWN: '이전 답변의 발송 결과를 확인할 수 없습니다. 메일 발송 이력을 확인한 뒤 처리해 주세요.',
+  UNKNOWN:
+    '이전 답변의 발송 결과를 확인할 수 없습니다. 메일 발송 이력을 확인한 뒤 [다시 발송]으로 재발송해 주세요.',
   FAILED: '이전 답변 발송에 실패했습니다. 답변을 확인한 뒤 다시 발송해 주세요.',
   SIMULATED: '모의 발송으로 처리되어 문의는 처리 중으로 남아 있습니다.',
 };
@@ -45,6 +47,7 @@ const ATTEMPT_NOTICES: Partial<
 export function InquiryDetailCard({ inquiry }: InquiryDetailCardProps) {
   const inquiryId = Number(inquiry.inquiryId);
   const [pendingReply, setPendingReply] = useState<PendingReply | null>(null);
+  const [isResendOpen, setIsResendOpen] = useState(false);
   const startInquiry = useStartInquiryMutation(inquiryId);
   const saveDraft = useSaveInquiryDraftMutation(inquiryId);
   const sendReply = useSendInquiryReplyMutation(inquiryId);
@@ -66,6 +69,8 @@ export function InquiryDetailCard({ inquiry }: InquiryDetailCardProps) {
   const isDone = inquiry.status === 'COMPLETED';
   // 처리 중이어도 발송 중·결과 불명확이면 편집·발송을 막습니다.
   const canAnswer = inquiry.status === 'IN_PROGRESS' && inquiry.canEdit;
+  const isDeliveryUnknown =
+    inquiry.status === 'IN_PROGRESS' && inquiry.latestAttempt?.status === 'UNKNOWN';
   const attemptNotice = inquiry.latestAttempt
     ? ATTEMPT_NOTICES[inquiry.latestAttempt.status]
     : undefined;
@@ -94,7 +99,10 @@ export function InquiryDetailCard({ inquiry }: InquiryDetailCardProps) {
   // 발송에 실패하면 답변과 상태를 그대로 둡니다. [취소] 시에도 입력은 유지합니다.
   const handleSend = () => {
     if (!pendingReply) return;
-    sendReply.mutate(pendingReply.draftVersion, { onSettled: () => setPendingReply(null) });
+    sendReply.mutate(
+      { expectedDraftVersion: pendingReply.draftVersion },
+      { onSettled: () => setPendingReply(null) },
+    );
   };
 
   return (
@@ -140,9 +148,14 @@ export function InquiryDetailCard({ inquiry }: InquiryDetailCardProps) {
             >
               처리 시작
             </Button>
-            <Button type="submit" disabled={!canAnswer || !answer.trim() || saveDraft.isPending}>
-              이메일 답변 및 완료
-            </Button>
+            {/* 이전 발송 결과를 알 수 없으면 발송 이력을 확인한 뒤 사유를 받아 다시 보냅니다. */}
+            {isDeliveryUnknown ? (
+              <Button onClick={() => setIsResendOpen(true)}>다시 발송</Button>
+            ) : (
+              <Button type="submit" disabled={!canAnswer || !answer.trim() || saveDraft.isPending}>
+                이메일 답변 및 완료
+              </Button>
+            )}
           </>
         )}
       </div>
@@ -175,6 +188,12 @@ export function InquiryDetailCard({ inquiry }: InquiryDetailCardProps) {
         </dl>
         <Notice>답변 발송은 계정 상태를 변경하지 않습니다.</Notice>
       </Modal>
+
+      <InquiryResendModal
+        isOpen={isResendOpen}
+        inquiry={inquiry}
+        onClose={() => setIsResendOpen(false)}
+      />
     </form>
   );
 }

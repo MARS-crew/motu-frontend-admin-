@@ -203,26 +203,41 @@ export default function ListingReviewPage() {
 
       {result === 'revision' && (
         <>
-          <Field
-            label="보완 항목 *"
-            htmlFor="revisionItem"
-            errorMessage={errors.revisionItem?.message}
-          >
-            <Controller
-              control={control}
-              name="revisionItem"
-              render={({ field }) => (
-                <Select
-                  id="revisionItem"
-                  options={LISTING_REVISION_ITEM_OPTIONS}
-                  value={field.value}
-                  onChange={field.onChange}
-                  placeholder="보완 항목 선택"
-                  hasError={Boolean(errors.revisionItem)}
-                />
-              )}
-            />
-          </Field>
+          {/* 보완 항목과 보완 기한(KST)은 한 줄에 나란히 둡니다. */}
+          <div className="grid grid-cols-2 items-start gap-3">
+            <Field
+              label="보완 항목 *"
+              htmlFor="revisionItem"
+              errorMessage={errors.revisionItem?.message}
+            >
+              <Controller
+                control={control}
+                name="revisionItem"
+                render={({ field }) => (
+                  <Select
+                    id="revisionItem"
+                    options={LISTING_REVISION_ITEM_OPTIONS}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="보완 항목 선택"
+                    hasError={Boolean(errors.revisionItem)}
+                  />
+                )}
+              />
+            </Field>
+            <Field
+              label="보완 기한 * (KST)"
+              htmlFor="revisionDeadline"
+              errorMessage={errors.revisionDeadline?.message}
+            >
+              <TextInput
+                id="revisionDeadline"
+                type="datetime-local"
+                hasError={Boolean(errors.revisionDeadline)}
+                {...register('revisionDeadline')}
+              />
+            </Field>
+          </div>
           <Field
             label="요청 내용 *"
             htmlFor="revisionRequest"
@@ -233,19 +248,6 @@ export default function ListingReviewPage() {
               placeholder="신청자에게 보완을 요청할 내용을 입력해 주세요."
               hasError={Boolean(errors.revisionRequest)}
               {...register('revisionRequest')}
-            />
-          </Field>
-          <Field
-            label="보완 기한 * (KST)"
-            htmlFor="revisionDeadline"
-            errorMessage={errors.revisionDeadline?.message}
-            className="w-80"
-          >
-            <TextInput
-              id="revisionDeadline"
-              type="datetime-local"
-              hasError={Boolean(errors.revisionDeadline)}
-              {...register('revisionDeadline')}
             />
           </Field>
         </>
