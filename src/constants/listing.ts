@@ -68,7 +68,7 @@ export const LISTING_REVIEW_TEXTS: Record<
     confirmLabel: '승인 확정',
   },
   revision: {
-    notice: '보완 요청 상태로 변경됩니다. 신청자는 수정 후 다시 제출할 수 있습니다.',
+    notice: '보완 요청 상태로 변경됩니다. 신청자는 보완 기한까지 수정 후 다시 제출할 수 있습니다.',
     noticeTone: 'neutral',
     confirmLabel: '보완 요청 확정',
   },

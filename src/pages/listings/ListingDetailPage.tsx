@@ -148,6 +148,8 @@ export default function ListingDetailPage() {
         <RevisionDeadlineModal
           isOpen={isExtendOpen}
           applicationId={application.id}
+          applicationNumber={application.applicationNumber}
+          applicantName={application.applicantName}
           revision={pendingRevision}
           onClose={() => setIsExtendOpen(false)}
         />

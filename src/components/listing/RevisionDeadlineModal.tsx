@@ -20,6 +20,9 @@ type PendingRevision = NonNullable<ListingApplicationDetail['pendingRevision']>;
 type RevisionDeadlineModalProps = {
   isOpen: boolean;
   applicationId: number;
+  // 모달 상단 표시용 (LST-260831-018 · 김신청)
+  applicationNumber: string;
+  applicantName: string;
   revision: PendingRevision;
   onClose: () => void;
 };
@@ -29,6 +32,8 @@ type RevisionDeadlineModalProps = {
 export function RevisionDeadlineModal({
   isOpen,
   applicationId,
+  applicationNumber,
+  applicantName,
   revision,
   onClose,
 }: RevisionDeadlineModalProps) {
@@ -69,6 +74,7 @@ export function RevisionDeadlineModal({
       onClose={handleClose}
       size="md"
       title="보완 기한 연장"
+      description={`${applicationNumber} · ${applicantName} · 보완 요청 · 미재제출`}
       actions={
         <>
           <Button variant="secondary" onClick={handleClose}>
@@ -104,7 +110,11 @@ export function RevisionDeadlineModal({
           {...register('reason')}
         />
       </Field>
-      {error && <Notice tone="danger">{getApiErrorMessage(error)}</Notice>}
+      {error ? (
+        <Notice tone="danger">{getApiErrorMessage(error)}</Notice>
+      ) : (
+        <Notice>새 기한은 현재 시각과 기존 기한보다 늦어야 합니다.</Notice>
+      )}
     </Modal>
   );
 }

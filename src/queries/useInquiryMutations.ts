@@ -8,6 +8,7 @@ import {
 import { ACTIVITY_LOGS_QUERY_KEY } from '@/queries/useActivityLogsQuery';
 import { DASHBOARD_QUERY_KEY } from '@/queries/useDashboardQuery';
 import { INQUIRIES_QUERY_KEY } from '@/queries/useInquiriesQuery';
+import type { SendInquiryReplyRequest } from '@/types/inquiry';
 
 // 문의를 처리하면 문의 목록·상세, 대시보드 처리 대기 건수, 활동 이력을 다시 불러옵니다.
 const useInvalidateInquiries = () => {
@@ -40,9 +41,9 @@ export const useSaveInquiryDraftMutation = (id: number) =>
 export const useSendInquiryReplyMutation = (id: number) => {
   const invalidate = useInvalidateInquiries();
   return useMutation({
-    // 발송마다 새 요청 ID 를 만듭니다.
-    mutationFn: (expectedDraftVersion: number) =>
-      postSendInquiryReply(id, { requestId: crypto.randomUUID(), expectedDraftVersion }),
+    // 발송마다 새 요청 ID 를 만듭니다. 재발송은 confirmResend·retryReason 을 함께 보냅니다.
+    mutationFn: (body: Omit<SendInquiryReplyRequest, 'requestId'>) =>
+      postSendInquiryReply(id, { requestId: crypto.randomUUID(), ...body }),
     retry: false,
     // 실패해도 발송 시도 결과가 기록될 수 있어 상세를 다시 불러옵니다.
     onSettled: invalidate,
