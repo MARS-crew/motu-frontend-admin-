@@ -48,3 +48,8 @@ export type BlockedAdminAccount = {
   // YYYY.MM.DD
   processedAt?: string;
 };
+
+// 새 비밀번호 화면에서 재설정 요청 화면으로 돌려보낼 때 넘기는 안내입니다. (만료·사용된 링크)
+export type PasswordResetLocationState = {
+  linkErrorMessage?: string;
+};

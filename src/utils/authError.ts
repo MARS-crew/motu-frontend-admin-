@@ -28,3 +28,13 @@ export const getLoginErrorMessage = (error: unknown) => {
   }
   return getApiErrorMessage(error);
 };
+
+// 링크 없이 새 비밀번호 화면에 들어온 경우의 안내입니다. (서버의 만료·사용 링크 문구와 같게 맞춥니다)
+export const INVALID_RESET_LINK_MESSAGE =
+  '재설정 링크가 만료되었거나 이미 사용되었습니다. 비밀번호 재설정을 다시 요청해 주세요.';
+
+// 비밀번호 재설정 실패 안내 문구입니다. 잠긴 계정은 로그인과 같은 관리자용 문구로 바꿉니다.
+export const getPasswordResetErrorMessage = (error: unknown) =>
+  getApiError(error)?.code === AUTH_ACCOUNT_LOCKED
+    ? ADMIN_LOCKED_MESSAGE
+    : getApiErrorMessage(error);
